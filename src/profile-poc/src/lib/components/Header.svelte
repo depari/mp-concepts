@@ -5,7 +5,7 @@
 <header class="header">
   <!-- 로고 (좌) -->
   <div class="header__logo" aria-label="서비스 로고">
-    <span class="logo-text">STREAM</span>
+    <span class="logo-text">SAMSUNG</span>
   </div>
 
   <!-- 타이틀 (중앙) -->
@@ -47,9 +47,9 @@
     font-family: var(--font-primary);
     font-size: 1.5rem;
     font-weight: 800;
-    color: #E50914;
+    color: #1B4FD8;
     letter-spacing: 0.12em;
-    text-shadow: 0 1px 8px rgba(229,9,20,0.5);
+    text-shadow: 0 1px 8px rgba(27, 79, 216, 0.5);
   }
 
   .header__title {
