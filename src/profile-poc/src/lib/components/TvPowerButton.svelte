@@ -1,12 +1,14 @@
 <script>
   import { isPowerOn, togglePower } from '../stores/tvPowerStore.js';
   import { exitHome } from '../stores/appStateStore.js';
+  import { closeMiniMode } from '../stores/miniModeStore.js';
   import { fade } from 'svelte/transition';
 
   function handlePowerClick() {
-    // 꺼진 상태에서 켜는 경우 항상 프로필 선택 화면(Full Mode)으로
+    // 꺼진 상태에서 켜는 경우
     if (!$isPowerOn) {
-      exitHome();
+      exitHome();        // 홈 화면에서 나가기 (Selection Mode로)
+      closeMiniMode();   // 미니 모드도 함께 종료
     }
     togglePower();
   }

@@ -2,7 +2,7 @@ import { navigate, focusedIndex } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
 import { activateDashboard, deactivateDashboard, interactionStore } from '../stores/interactionStore.js';
 import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeStore.js';
-import { appStateStore, enterHome } from '../stores/appStateStore.js';
+import { appStateStore, enterHome, exitHome } from '../stores/appStateStore.js';
 import { isPowerOn } from '../stores/tvPowerStore.js';
 import { homeFocusStore, moveHomeFocus } from '../stores/homeNavigationStore.js';
 import { get } from 'svelte/store';
@@ -34,6 +34,14 @@ export function createKeyHandler(onSelect) {
 
     // 3. 미니 모드 활성화 시 네비게이션
     if (miniMode.isActive) {
+      const pos = miniMode.position || 'bottom';
+      
+      // 위치별 바깥쪽 방향키로 Full 모드 진입
+      if (pos === 'bottom' && e.key === 'ArrowDown') { e.preventDefault(); exitHome(); toggleMiniMode(); return; }
+      if (pos === 'top' && e.key === 'ArrowUp') { e.preventDefault(); exitHome(); toggleMiniMode(); return; }
+      if (pos === 'left' && e.key === 'ArrowLeft') { e.preventDefault(); exitHome(); toggleMiniMode(); return; }
+      if (pos === 'right' && e.key === 'ArrowRight') { e.preventDefault(); exitHome(); toggleMiniMode(); return; }
+
       if (e.key === 'ArrowLeft' && !isSideMode) { e.preventDefault(); navigate(-1); }
       if (e.key === 'ArrowRight' && !isSideMode) { e.preventDefault(); navigate(1); }
       if (e.key === 'ArrowUp' && isSideMode) { e.preventDefault(); navigate(-1); }
