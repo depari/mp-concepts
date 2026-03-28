@@ -3,7 +3,9 @@
   import ProfileScreen from './lib/components/ProfileScreen.svelte';
   import Header from './lib/components/Header.svelte';
   import PocControlPanel from './lib/components/PocControlPanel.svelte';
+  import MiniModeSelector from './lib/components/MiniModeSelector.svelte';
   import { createKeyHandler } from './lib/utils/navigation.js';
+  import { miniModeStore, toggleMiniMode } from './lib/stores/miniModeStore.js';
 
   let screenRef;
 
@@ -14,29 +16,68 @@
   onMount(() => {
     const handler = createKeyHandler(handleEnter);
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('toggle-mini-mode', toggleMiniMode);
+    return () => {
+      window.removeEventListener('keydown', handler);
+      window.removeEventListener('toggle-mini-mode', toggleMiniMode);
+    };
   });
 </script>
 
-<!-- 메인 화면 -->
-<Header />
-<ProfileScreen bind:this={screenRef} />
+<!-- TV 배경 -->
+<div class="tv-background"></div>
 
-<!-- 하단 키 힌트 -->
-<div class="key-hints" aria-hidden="true">
-  <span class="hint">← → 이동</span>
-  <span class="hint-sep">·</span>
-  <span class="hint">Enter 이어보기</span>
-  <span class="hint-sep">·</span>
-  <span class="hint">Tab 설정</span>
+<!-- 메인 화면 (Full Mode) -->
+<div class="full-mode-layer" class:mode-hidden={$miniModeStore.isActive}>
+  <Header />
+  <ProfileScreen bind:this={screenRef} />
+
+  <!-- 하단 키 힌트 -->
+  <div class="key-hints" aria-hidden="true">
+    <span class="hint">← → 이동</span>
+    <span class="hint-sep">·</span>
+    <span class="hint">Enter 이어보기</span>
+    <span class="hint-sep">·</span>
+    <span class="hint">Tab 설정</span>
+  </div>
 </div>
 
 <!-- POC 컨트롤 패널 (우측 하단 FAB + 패널) -->
 <PocControlPanel />
 
+<!-- 특화 미니모드 오버레이 -->
+<MiniModeSelector />
+
 <style>
   :global(body) {
     overflow: hidden;
+    background: #000;
+  }
+
+  .tv-background {
+    position: fixed;
+    inset: 0;
+    background-image: url('/tv-bg.png');
+    background-size: cover;
+    background-position: center;
+    z-index: -10;
+  }
+
+  .full-mode-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+    transform-origin: center center;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .mode-hidden {
+    transform: scale(0.9) translateY(-2%);
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 20px;
   }
 
   .key-hints {

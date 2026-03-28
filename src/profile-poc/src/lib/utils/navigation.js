@@ -1,6 +1,8 @@
 // src/lib/utils/navigation.js
 import { navigate, focusedIndex } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
+import { activateDashboard, deactivateDashboard, interactionStore } from '../stores/interactionStore.js';
+import { get } from 'svelte/store';
 
 let panelOpen = false;
 isPocPanelOpen.subscribe(v => { panelOpen = v; });
@@ -16,13 +18,19 @@ export function createKeyHandler(onSelect) {
       return;
     }
 
+    const isDashboard = get(interactionStore).isDashboardActive;
+
     const actions = {
       'ArrowLeft':  () => { e.preventDefault(); navigate(-1); },
       'ArrowRight': () => { e.preventDefault(); navigate(1); },
+      'ArrowDown':  () => { e.preventDefault(); if (!isDashboard) activateDashboard(); },
+      'ArrowUp':    () => { e.preventDefault(); if (isDashboard) deactivateDashboard(); },
       'Enter':      () => { e.preventDefault(); onSelect?.(); },
       ' ':          () => { e.preventDefault(); onSelect?.(); },
       'Tab':        () => { e.preventDefault(); togglePocPanel(); },
-      'Escape':     () => { e.preventDefault(); },
+      'Escape':     () => { e.preventDefault(); if (isDashboard) deactivateDashboard(); },
+      'm':          () => { e.preventDefault(); window.dispatchEvent(new CustomEvent('toggle-mini-mode')); },
+      'M':          () => { e.preventDefault(); window.dispatchEvent(new CustomEvent('toggle-mini-mode')); },
     };
 
     actions[e.key]?.();

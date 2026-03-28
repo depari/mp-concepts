@@ -1,21 +1,25 @@
 <script>
   export let title = '';
   export let episode = '';
-  export let progress = 0;
+  export let progress = 0; // 0 to 100 지원
   export let thumbnailGradient = 'linear-gradient(135deg, #1a1a2e, #16213e)';
+  export let thumbnailUrl = null;
+
+  $: displayProgress = progress > 1 ? progress : progress * 100;
+  $: remainPercent = 100 - displayProgress;
 </script>
 
 <div class="content-card">
-  <div class="card__thumb" style="background: {thumbnailGradient};">
+  <div class="card__thumb" style="background: {thumbnailUrl ? `url(${thumbnailUrl}) center/cover` : thumbnailGradient};">
     <div class="card__play">▶</div>
   </div>
   <div class="card__info">
     <p class="card__title">{title}</p>
     <p class="card__episode">{episode}</p>
     <div class="card__progress-track">
-      <div class="card__progress-fill" style="width: {progress * 100}%;"></div>
+      <div class="card__progress-fill" style="width: {displayProgress}%;"></div>
     </div>
-    <p class="card__time">{Math.round((1 - progress) * 100)}% 남음</p>
+    <p class="card__time">{Math.round(remainPercent)}% 남음</p>
   </div>
 </div>
 

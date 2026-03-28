@@ -1,6 +1,9 @@
 <script>
   import { activeProfiles, focusedIndex } from '../stores/profileStore.js';
   import ProfilePanel from './ProfilePanel.svelte';
+  import ProfileDashboard from './ProfileDashboard.svelte';
+  import { resetDashboard } from '../stores/interactionStore.js';
+  import { fetchPreviewContent } from '../stores/previewContentStore.js';
 
   let panelRefs = [];
 
@@ -14,6 +17,15 @@
 
   // 포커스된 패널이 항상 화면 중앙(50vw)에 오도록 x축 오프셋 계산
   $: offsetVw = 50 - ($focusedIndex * UNFOCUSED_WIDTH_VW + FOCUSED_WIDTH_VW / 2);
+
+  // Focus 변경 감지 시 타이머 리셋 및 데이터 패치
+  $: {
+    const currentProfileId = $activeProfiles[$focusedIndex]?.id;
+    if (currentProfileId) {
+      resetDashboard();
+      fetchPreviewContent(currentProfileId);
+    }
+  }
 </script>
 
 <div class="screen-wrapper">
@@ -31,6 +43,10 @@
       />
     {/each}
   </section>
+
+  {#if $activeProfiles[$focusedIndex]}
+    <ProfileDashboard profile={$activeProfiles[$focusedIndex]} />
+  {/if}
 </div>
 
 <style>
