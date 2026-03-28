@@ -1,7 +1,7 @@
-// src/lib/utils/navigation.js
 import { navigate, focusedIndex } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
 import { activateDashboard, deactivateDashboard, interactionStore } from '../stores/interactionStore.js';
+import { miniModeStore } from '../stores/miniModeStore.js';
 import { get } from 'svelte/store';
 
 let panelOpen = false;
@@ -19,12 +19,32 @@ export function createKeyHandler(onSelect) {
     }
 
     const isDashboard = get(interactionStore).isDashboardActive;
+    const miniMode = get(miniModeStore);
+    const isSideMode = miniMode.isActive && (miniMode.position === 'left' || miniMode.position === 'right');
 
     const actions = {
-      'ArrowLeft':  () => { e.preventDefault(); navigate(-1); },
-      'ArrowRight': () => { e.preventDefault(); navigate(1); },
-      'ArrowDown':  () => { e.preventDefault(); if (!isDashboard) activateDashboard(); },
-      'ArrowUp':    () => { e.preventDefault(); if (isDashboard) deactivateDashboard(); },
+      'ArrowLeft':  () => { 
+        if (!isSideMode) { e.preventDefault(); navigate(-1); }
+      },
+      'ArrowRight': () => { 
+        if (!isSideMode) { e.preventDefault(); navigate(1); }
+      },
+      'ArrowUp':    () => { 
+        e.preventDefault();
+        if (isSideMode) {
+          navigate(-1);
+        } else if (isDashboard) {
+          deactivateDashboard();
+        }
+      },
+      'ArrowDown':  () => { 
+        e.preventDefault();
+        if (isSideMode) {
+          navigate(1);
+        } else if (!isDashboard) {
+          activateDashboard();
+        }
+      },
       'Enter':      () => { e.preventDefault(); onSelect?.(); },
       ' ':          () => { e.preventDefault(); onSelect?.(); },
       'Tab':        () => { e.preventDefault(); togglePocPanel(); },

@@ -1,24 +1,41 @@
 <script>
   import { activeProfiles, focusedIndex } from '../stores/profileStore.js';
-  import { miniModeStore, toggleMiniMode } from '../stores/miniModeStore.js';
+  import { miniModeStore, toggleMiniMode, setMiniModePosition } from '../stores/miniModeStore.js';
   import { fly, fade } from 'svelte/transition';
 
   $: profiles = $activeProfiles;
+  $: pos = $miniModeStore.position || 'bottom';
+
+  function getFlyParams(position) {
+    if (position === 'top') return { y: -100, duration: 400 };
+    if (position === 'left') return { x: -100, duration: 400 };
+    if (position === 'right') return { x: 100, duration: 400 };
+    return { y: 100, duration: 400 };
+  }
 </script>
 
 {#if $miniModeStore.isActive}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="mini-overlay" transition:fade={{ duration: 200 }} on:click={toggleMiniMode}>
-    <div class="mini-bar" transition:fly={{ y: 100, duration: 400 }} on:click|stopPropagation>
+  <div class="mini-overlay pos-{pos}" transition:fade={{ duration: 200 }} on:click={toggleMiniMode}>
+    {#key pos}
+    <div class="mini-bar {pos}" in:fly={getFlyParams(pos)} out:fade={{duration: 200}} on:click|stopPropagation>
       <div class="mini-header">
-        <span class="mini-title">Switching Profile (Mini Mode)</span>
-        <button class="close-btn" on:click={toggleMiniMode} aria-label="Close">✕</button>
+        <span class="mini-title">Switch Profile</span>
+        <div class="controls">
+          <button class="pos-btn" class:pos-active={pos==='top'} on:click={() => setMiniModePosition('top')}>T</button>
+          <button class="pos-btn" class:pos-active={pos==='left'} on:click={() => setMiniModePosition('left')}>L</button>
+          <button class="pos-btn" class:pos-active={pos==='right'} on:click={() => setMiniModePosition('right')}>R</button>
+          <button class="pos-btn" class:pos-active={pos==='bottom'} on:click={() => setMiniModePosition('bottom')}>B</button>
+          <span class="div-line">|</span>
+          <button class="close-btn" on:click={toggleMiniMode} aria-label="Close">✕</button>
+        </div>
       </div>
-      <div class="mini-profiles">
+      
+      <div class="mini-profiles {pos}">
         {#each profiles as profile, i (profile.id)}
           <button 
-            class="mini-profile-item" 
+            class="mini-profile-item {pos}" 
             class:active={i === $focusedIndex}
             on:click={() => {
               focusedIndex.set(i);
@@ -33,6 +50,7 @@
       </div>
       <div class="mini-hint">Press 'M' to toggle Mini Mode, arrow keys to navigate.</div>
     </div>
+    {/key}
   </div>
 {/if}
 
@@ -45,20 +63,44 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
   }
+
+  /* Overlay Flex Direction */
+  .mini-overlay.pos-bottom { flex-direction: column; justify-content: flex-end; }
+  .mini-overlay.pos-top { flex-direction: column; justify-content: flex-start; }
+  .mini-overlay.pos-left { flex-direction: row; justify-content: flex-start; }
+  .mini-overlay.pos-right { flex-direction: row; justify-content: flex-end; }
+
+  /* Bar Layout */
   .mini-bar {
     background: rgba(20, 20, 20, 0.85);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding: 24px 60px 40px;
     display: flex;
-    flex-direction: column;
-    gap: 20px;
     align-items: center;
+    gap: 20px;
   }
+
+  /* Horizontal Modes (Top / Bottom) */
+  .mini-bar.bottom, .mini-bar.top {
+    flex-direction: column;
+    width: 100%;
+    padding: 24px 60px 40px;
+  }
+  .mini-bar.bottom { border-top: 1px solid rgba(255,255,255,0.08); }
+  .mini-bar.top { border-bottom: 1px solid rgba(255,255,255,0.08); }
+
+  /* Vertical Modes (Left / Right) */
+  .mini-bar.left, .mini-bar.right {
+    flex-direction: column;
+    height: 100vh;
+    width: 280px;
+    padding: 40px 20px;
+    justify-content: flex-start;
+  }
+  .mini-bar.left { border-right: 1px solid rgba(255,255,255,0.08); }
+  .mini-bar.right { border-left: 1px solid rgba(255,255,255,0.08); }
+
   .mini-header {
     width: 100%;
     max-width: 800px;
@@ -68,11 +110,46 @@
     color: white;
     font-family: var(--font-primary);
   }
+
+  .left .mini-header, .right .mini-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
   .mini-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: rgba(255,255,255,0.9);
   }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .pos-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid transparent;
+    color: #bbb;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+  }
+  .pos-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+  .pos-btn.pos-active {
+    background: #007AFF;
+    color: white;
+    border-color: #007AFF;
+  }
+
+  .div-line { color: rgba(255,255,255,0.2); margin: 0 4px; }
+
   .close-btn {
     background: none;
     border: none;
@@ -86,12 +163,27 @@
   .mini-profiles {
     display: flex;
     gap: 16px;
-    overflow-x: auto;
     width: 100%;
     max-width: 800px;
     justify-content: center;
+  }
+  
+  /* Layout for profiles based on Bar Mode */
+  .mini-profiles.bottom, .mini-profiles.top {
+    flex-direction: row;
+    overflow-x: auto;
     padding: 24px 10px 10px;
   }
+
+  .mini-profiles.left, .mini-profiles.right {
+    flex-direction: column;
+    overflow-y: auto;
+    justify-content: flex-start;
+    padding: 10px 24px 10px 10px;
+    height: 100%;
+    margin-top: 20px;
+  }
+
   .mini-profile-item {
     background: none;
     border: none;
@@ -102,9 +194,13 @@
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .mini-profile-item:hover, .mini-profile-item.active {
-    transform: translateY(-8px) scale(1.1);
-  }
+
+  /* Hover directions */
+  .mini-profile-item.bottom:hover, .mini-profile-item.bottom.active { transform: translateY(-8px) scale(1.1); }
+  .mini-profile-item.top:hover, .mini-profile-item.top.active { transform: translateY(8px) scale(1.1); }
+  .mini-profile-item.left:hover, .mini-profile-item.left.active { transform: translateX(8px) scale(1.1); }
+  .mini-profile-item.right:hover, .mini-profile-item.right.active { transform: translateX(-8px) scale(1.1); }
+
   .mini-avatar {
     width: 64px;
     height: 64px;
@@ -130,6 +226,6 @@
     font-family: var(--font-primary);
     font-size: 0.75rem;
     color: #555;
-    margin-top: 10px;
+    margin-top: auto;
   }
 </style>
