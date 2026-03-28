@@ -19,6 +19,8 @@
   ];
 
   function handleKeydown(e) {
+    if ($miniModeStore.isActive) return; // 미니 모드일 때는 홈 화면 조작 방지
+
     if (e.key === 'ArrowLeft') {
       focusedAppIndex = Math.max(0, focusedAppIndex - 1);
     } else if (e.key === 'ArrowRight') {

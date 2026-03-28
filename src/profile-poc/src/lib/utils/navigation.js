@@ -28,28 +28,37 @@ export function createKeyHandler(onSelect) {
 
     const actions = {
       'ArrowLeft':  () => { 
-        if (!isSideMode && isSelectionMode) { e.preventDefault(); navigate(-1); }
+        if (miniMode.isActive && !isSideMode) { e.preventDefault(); navigate(-1); }
+        else if (isSelectionMode && !isSideMode) { e.preventDefault(); navigate(-1); }
       },
       'ArrowRight': () => { 
-        if (!isSideMode && isSelectionMode) { e.preventDefault(); navigate(1); }
+        if (miniMode.isActive && !isSideMode) { e.preventDefault(); navigate(1); }
+        else if (isSelectionMode && !isSideMode) { e.preventDefault(); navigate(1); }
       },
       'ArrowUp':    () => { 
-        e.preventDefault();
-        if (isSideMode) {
-          navigate(-1);
-        } else if (isDashboard) {
-          deactivateDashboard();
+        if (miniMode.isActive && isSideMode) { e.preventDefault(); navigate(-1); }
+        else {
+          e.preventDefault();
+          if (isDashboard) deactivateDashboard();
         }
       },
       'ArrowDown':  () => { 
-        e.preventDefault();
-        if (isSideMode) {
-          navigate(1);
-        } else if (!isDashboard) {
-          activateDashboard();
+        if (miniMode.isActive && isSideMode) { e.preventDefault(); navigate(1); }
+        else {
+          e.preventDefault();
+          if (!isDashboard && isSelectionMode) activateDashboard();
         }
       },
-      'Enter':      () => { e.preventDefault(); onSelect?.(); },
+      'Enter':      () => { 
+        e.preventDefault(); 
+        if (miniMode.isActive) {
+          // 미니 모드에서 Enter시 홈으로 다시 진입 (이미 홈이겠지만 상태 갱신 및 모드 닫기)
+          onSelect?.(); 
+          window.dispatchEvent(new CustomEvent('toggle-mini-mode'));
+        } else {
+          onSelect?.(); 
+        }
+      },
       ' ':          () => { e.preventDefault(); onSelect?.(); },
       'Tab':        () => { e.preventDefault(); togglePocPanel(); },
       'Escape':     () => { e.preventDefault(); if (isDashboard) deactivateDashboard(); },
