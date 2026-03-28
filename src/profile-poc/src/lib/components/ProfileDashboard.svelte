@@ -120,9 +120,10 @@
 
   .content-grid {
     display: flex;
-    gap: 24px;
+    gap: 32px;
     overflow-x: auto;
-    padding-bottom: 20px;
+    padding: 40px 10px;
+    margin-top: -20px;
     scrollbar-width: none; /* Firefox */
   }
 

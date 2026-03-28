@@ -2,13 +2,15 @@
   import { isPowerOn, togglePower } from '../stores/tvPowerStore.js';
   import { exitHome } from '../stores/appStateStore.js';
   import { closeMiniMode } from '../stores/miniModeStore.js';
+  import { deactivateDashboard } from '../stores/interactionStore.js';
   import { fade } from 'svelte/transition';
 
   function handlePowerClick() {
     // 꺼진 상태에서 켜는 경우
     if (!$isPowerOn) {
-      exitHome();        // 홈 화면에서 나가기 (Selection Mode로)
-      closeMiniMode();   // 미니 모드도 함께 종료
+      exitHome();           // 홈 화면에서 나가기 (Selection Mode로)
+      closeMiniMode();      // 미니 모드 종료
+      deactivateDashboard(); // 대시보드(콘텐츠 탐색) 종료
     }
     togglePower();
   }
