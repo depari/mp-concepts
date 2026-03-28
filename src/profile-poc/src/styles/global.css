@@ -1,0 +1,72 @@
+/* ============================================================
+   global.css — Design Tokens & CSS Variables
+   테마별 CSS 변수를 이 파일에서 정의하고, themes.js에서 동적으로 교체
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* --- Font --- */
+  --font-primary: 'Poppins', sans-serif;
+  --font-korean:  'Noto Sans KR', sans-serif;
+
+  /* --- Spacing --- */
+  --header-height: 72px;
+  --panel-gap: 1px;
+
+  /* --- Z-Index --- */
+  --z-header:       100;
+  --z-controls:     9998;
+  --z-fab:          9999;
+  --z-key-hint:     50;
+
+  /* --- Transition --- */
+  --transition-fast:   150ms ease;
+  --transition-normal: 300ms ease;
+
+  /* === Theme Tokens (Dark Neo 기본값) === */
+  --bg-base:             #0a0a0a;
+  --panel-unfocused-bg:  #111111;
+  --panel-overlay:       rgba(0, 0, 0, 0.55);
+  --unfocused-filter:    grayscale(100%) brightness(35%);
+  --text-primary:        #ffffff;
+  --text-secondary:      rgba(255, 255, 255, 0.55);
+  --text-hint:           rgba(255, 255, 255, 0.35);
+  --panel-flex-focused:  4;
+  --panel-transition:    500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --border-radius-panel: 0px;
+  --name-shadow:         0 2px 20px rgba(0, 0, 0, 0.8);
+  --header-bg:           rgba(0, 0, 0, 0.0);
+  --control-bg:          rgba(15, 15, 25, 0.92);
+  --control-border:      rgba(255, 255, 255, 0.12);
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-base);
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-primary);
+  border: none;
+  background: none;
+  padding: 0;
+}
