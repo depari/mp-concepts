@@ -6,11 +6,16 @@
   import MiniModeSelector from './lib/components/MiniModeSelector.svelte';
   import { createKeyHandler } from './lib/utils/navigation.js';
   import { miniModeStore, toggleMiniMode } from './lib/stores/miniModeStore.js';
+  import { appStateStore } from './lib/stores/appStateStore.js';
+  import SamsungTVHome from './lib/components/SamsungTVHome.svelte';
 
   let screenRef;
 
   function handleEnter() {
-    screenRef?.handleEnter();
+    // 딥링크 상태가 아닌 일반 선택 상태일 때만 엔터 핸들
+    if ($appStateStore.mode === 'selection') {
+      screenRef?.handleEnter();
+    }
   }
 
   onMount(() => {
@@ -24,23 +29,28 @@
   });
 </script>
 
-<!-- TV 배경 -->
+<!-- TV 배경 (항상 존재하지만 홈화면에서는 숨길 수 있음) -->
 <div class="tv-background"></div>
 
-<!-- 메인 화면 (Full Mode) -->
-<div class="full-mode-layer" class:mode-hidden={$miniModeStore.isActive}>
-  <Header />
-  <ProfileScreen bind:this={screenRef} />
+<!-- 화면 전환 로직 -->
+{#if $appStateStore.mode === 'home' || $appStateStore.mode === 'deep_link'}
+  <SamsungTVHome />
+{:else}
+  <!-- 메인 화면 (Full Mode) -->
+  <div class="full-mode-layer" class:mode-hidden={$miniModeStore.isActive}>
+    <Header />
+    <ProfileScreen bind:this={screenRef} />
 
-  <!-- 하단 키 힌트 -->
-  <div class="key-hints" aria-hidden="true">
-    <span class="hint">← → 이동</span>
-    <span class="hint-sep">·</span>
-    <span class="hint">Enter 이어보기</span>
-    <span class="hint-sep">·</span>
-    <span class="hint">Tab 설정</span>
+    <!-- 하단 키 힌트 -->
+    <div class="key-hints" aria-hidden="true">
+      <span class="hint">← → 이동</span>
+      <span class="hint-sep">·</span>
+      <span class="hint">Enter 이어보기</span>
+      <span class="hint-sep">·</span>
+      <span class="hint">Tab 설정</span>
+    </div>
   </div>
-</div>
+{/if}
 
 <!-- POC 컨트롤 패널 (우측 하단 FAB + 패널) -->
 <PocControlPanel />

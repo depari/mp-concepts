@@ -5,10 +5,12 @@
   import { resetDashboard } from '../stores/interactionStore.js';
   import { fetchPreviewContent } from '../stores/previewContentStore.js';
 
-  let panelRefs = [];
+  let panels = [];
 
   export function handleEnter() {
-    panelRefs[$focusedIndex]?.activateContents();
+    if (panels[$focusedIndex]) {
+      panels[$focusedIndex].handleEnter();
+    }
   }
 
   // 패널 너비 설정 (vw)
@@ -38,7 +40,7 @@
       <ProfilePanel
         {profile}
         isFocused={i === $focusedIndex}
-        bind:this={panelRefs[i]}
+        bind:this={panels[i]}
         on:click={() => focusedIndex.set(i)}
       />
     {/each}

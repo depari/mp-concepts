@@ -4,11 +4,18 @@
   import ContentCard from './ContentCard.svelte';
   import { interactionStore } from '../stores/interactionStore.js';
   import { previewContentStore } from '../stores/previewContentStore.js';
+  import { appStateStore, enterHome } from '../stores/appStateStore.js';
 
   export let profile;
   export let isFocused = false;
 
   $: hidePanelBottom = isFocused && $interactionStore.isDashboardActive;
+
+  export function handleEnter() {
+    if (isFocused) {
+      enterHome();
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
