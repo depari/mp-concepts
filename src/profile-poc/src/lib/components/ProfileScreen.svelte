@@ -41,7 +41,13 @@
         {profile}
         isFocused={i === $focusedIndex}
         bind:this={panels[i]}
-        on:click={() => focusedIndex.set(i)}
+        on:click={() => {
+          if (i === $focusedIndex) {
+            handleEnter();
+          } else {
+            focusedIndex.set(i);
+          }
+        }}
       />
     {/each}
   </section>

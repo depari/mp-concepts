@@ -1,9 +1,13 @@
 <script>
   import { focusedProfile } from '../stores/profileStore.js';
   import { appStateStore, exitHome } from '../stores/appStateStore.js';
+  import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';
   import { fade, fly, scale } from 'svelte/transition';
+  import { onMount } from 'svelte';
 
   $: profile = $focusedProfile;
+
+  let focusedAppIndex = 2; // 기본 'TV Plus' 포커스
 
   const mockApps = [
     { id: 'netflix', name: 'Netflix', color: '#E50914' },
@@ -13,13 +17,34 @@
     { id: 'disney', name: 'Disney+', color: '#0063E5' },
     { id: 'prime', name: 'Prime Video', color: '#00A8E1' }
   ];
+
+  function handleKeydown(e) {
+    if (e.key === 'ArrowLeft') {
+      focusedAppIndex = Math.max(0, focusedAppIndex - 1);
+    } else if (e.key === 'ArrowRight') {
+      focusedAppIndex = Math.min(mockApps.length - 1, focusedAppIndex + 1);
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  });
 </script>
 
-<div class="home-container" style="--profile-accent: {profile.panelAccentColor};" in:scale={{ duration: 800, start: 1.2, opacity: 0 }} out:fade>
+<div 
+  class="home-container" 
+  style="--profile-accent: {profile.panelAccentColor};" 
+  in:scale={{ duration: 1000, start: 1.2, opacity: 0, easing: t => t * t }} 
+  out:fade
+>
+  <!-- 배경 틴트 레이어 -->
+  <div class="background-tint" style="background: radial-gradient(circle at top right, {profile.panelAccentColor}22 0%, transparent 60%);"></div>
+
   <!-- 로고 및 상단 GNB -->
   <header class="home-header">
     <div class="logo">SAMSUNG</div>
-    <div class="user-chip" on:click={exitHome}>
+    <div class="user-chip" role="button" tabindex="0" on:click={openMiniMode}>
       <img src={profile.avatarUrl} alt="" />
       <span>{profile.name}</span>
     </div>
@@ -27,10 +52,10 @@
 
   <!-- 메인 추천 영역 -->
   <main class="home-main">
-    <div class="recommendation-card" in:fly={{ y: 100, delay: 400, duration: 600 }}>
-      <p class="tagline">Welcome back, {profile.name}!</p>
+    <div class="recommendation-card" in:fly={{ y: 80, delay: 500, duration: 800 }}>
+      <p class="tagline" style="color: {profile.panelAccentColor};">Welcome back, {profile.name}!</p>
       <h1>{profile.id === 'profile_1' ? '이번 주 인기 오리지널' : '당신을 위한 추천 영화'}</h1>
-      <p class="desc">지금 바로 시흥 중이던 콘텐츠를 이어서 감상해 보세요.</p>
+      <p class="desc">지금 바로 시청 중이던 콘텐츠를 이어서 감상해 보세요.</p>
       <div class="btn-group">
         <button class="btn primary">지금 시청하기</button>
         <button class="btn secondary">상세 정보</button>
@@ -39,9 +64,9 @@
   </main>
 
   <!-- 하단 앱 바 (Launcher) -->
-  <footer class="app-launcher" in:fly={{ y: 50, delay: 600, duration: 500 }}>
-    {#each mockApps as app (app.id)}
-      <div class="app-icon-wrapper">
+  <footer class="app-launcher" in:fly={{ y: 50, delay: 700, duration: 600 }}>
+    {#each mockApps as app, i (app.id)}
+      <div class="app-icon-wrapper" class:focused={i === focusedAppIndex}>
         <div class="app-icon" style="background-color: {app.color};">
           {app.name.charAt(0)}
         </div>
@@ -65,20 +90,25 @@
   .home-container {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #0f0f0f, #222);
+    background: linear-gradient(135deg, #0f0f0f, #121212, var(--profile-accent)0a);
     display: flex;
     flex-direction: column;
-    z-index: 1000;
+    z-index: 100;
     color: white;
     font-family: var(--font-korean);
     padding: 60px 80px;
   }
 
-  .home-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 60px;
+  .background-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .home-header, .home-main, .app-launcher {
+    position: relative;
+    z-index: 10;
   }
 
   .logo {
@@ -89,28 +119,35 @@
   }
 
   .user-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 16px 6px 6px;
+    border-radius: 40px;
     display: flex;
     align-items: center;
     gap: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 6px 20px 6px 6px;
-    border-radius: 30px;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white;
+    font-family: inherit;
   }
+
   .user-chip:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.05);
   }
+
   .user-chip img {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
+    object-fit: cover;
+    background: #333;
   }
+
   .user-chip span {
-    font-size: 0.95rem;
     font-weight: 500;
+    font-size: 0.95rem;
   }
 
   .home-main {

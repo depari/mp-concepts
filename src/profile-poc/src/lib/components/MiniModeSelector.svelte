@@ -1,6 +1,7 @@
 <script>
   import { activeProfiles, focusedIndex } from '../stores/profileStore.js';
   import { miniModeStore, toggleMiniMode, setMiniModePosition } from '../stores/miniModeStore.js';
+  import { appStateStore, exitHome } from '../stores/appStateStore.js';
   import { fly, fade } from 'svelte/transition';
 
   $: profiles = $activeProfiles;
@@ -12,6 +13,11 @@
     if (position === 'right') return { x: 100, duration: 400 };
     return { y: 100, duration: 400 };
   }
+
+  function handleFullMode() {
+    exitHome();
+    toggleMiniMode();
+  }
 </script>
 
 {#if $miniModeStore.isActive}
@@ -21,7 +27,10 @@
     {#key pos}
     <div class="mini-bar {pos}" in:fly={getFlyParams(pos)} out:fade={{duration: 200}} on:click|stopPropagation>
       <div class="mini-header">
-        <span class="mini-title">Switch Profile</span>
+        <div class="header-left">
+          <span class="mini-title">Switch Profile</span>
+          <button class="full-view-btn" on:click={handleFullMode}>Full Mode ↗</button>
+        </div>
         <div class="controls">
           <button class="pos-btn" class:pos-active={pos==='top'} on:click={() => setMiniModePosition('top')}>T</button>
           <button class="pos-btn" class:pos-active={pos==='left'} on:click={() => setMiniModePosition('left')}>L</button>
@@ -70,6 +79,31 @@
   .mini-overlay.pos-top { flex-direction: column; justify-content: flex-start; }
   .mini-overlay.pos-left { flex-direction: row; justify-content: flex-start; }
   .mini-overlay.pos-right { flex-direction: row; justify-content: flex-end; }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .full-view-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .full-view-btn:hover {
+    background: white;
+    color: black;
+    border-color: white;
+  }
 
   /* Bar Layout */
   .mini-bar {

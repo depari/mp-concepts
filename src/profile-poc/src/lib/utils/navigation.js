@@ -2,6 +2,7 @@ import { navigate, focusedIndex } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
 import { activateDashboard, deactivateDashboard, interactionStore } from '../stores/interactionStore.js';
 import { miniModeStore } from '../stores/miniModeStore.js';
+import { appStateStore } from '../stores/appStateStore.js';
 import { get } from 'svelte/store';
 
 let panelOpen = false;
@@ -9,6 +10,9 @@ isPocPanelOpen.subscribe(v => { panelOpen = v; });
 
 export function createKeyHandler(onSelect) {
   return function handleKey(e) {
+    const state = get(appStateStore);
+    const isSelectionMode = state.mode === 'selection';
+
     // 컨트롤 패널이 열려 있으면 Tab/Escape만 처리
     if (panelOpen) {
       if (e.key === 'Escape' || e.key === 'Tab') {
@@ -24,10 +28,10 @@ export function createKeyHandler(onSelect) {
 
     const actions = {
       'ArrowLeft':  () => { 
-        if (!isSideMode) { e.preventDefault(); navigate(-1); }
+        if (!isSideMode && isSelectionMode) { e.preventDefault(); navigate(-1); }
       },
       'ArrowRight': () => { 
-        if (!isSideMode) { e.preventDefault(); navigate(1); }
+        if (!isSideMode && isSelectionMode) { e.preventDefault(); navigate(1); }
       },
       'ArrowUp':    () => { 
         e.preventDefault();

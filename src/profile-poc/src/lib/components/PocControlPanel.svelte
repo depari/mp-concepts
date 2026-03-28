@@ -9,6 +9,7 @@
     isPocPanelOpen,
     togglePocPanel
   } from '../stores/pocConfigStore.js';
+  import { isPowerOn, togglePower } from '../stores/tvPowerStore.js';
   import ProfileCountControl from './ProfileCountControl.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
 
@@ -65,6 +66,22 @@
         themes={THEMES}
         bind:activeId={$activeThemeId}
       />
+    </section>
+
+    <!-- 구분선 -->
+    <div class="panel-divider"></div>
+
+    <!-- TV 전원 섹션 -->
+    <section class="panel-section power-section">
+      <h3 class="panel-section__label">TV 전원</h3>
+      <button 
+        class="power-toggle-btn" 
+        class:is-on={$isPowerOn}
+        on:click={togglePower}
+      >
+        <span class="power-icon">⏻</span>
+        {$isPowerOn ? 'TV ON' : 'TV OFF'}
+      </button>
     </section>
 
     <!-- 현재 상태 표시 -->
@@ -191,5 +208,38 @@
 
   .panel-status__sep {
     opacity: 0.4;
+  }
+
+  /* 전원 버튼 스타일 */
+  .power-toggle-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ff4d4d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-primary);
+  }
+
+  .power-toggle-btn.is-on {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+  }
+
+  .power-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .power-icon {
+    font-size: 1.2rem;
   }
 </style>
