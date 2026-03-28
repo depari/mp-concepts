@@ -9,6 +9,7 @@
   import { appStateStore } from './lib/stores/appStateStore.js';
   import { isPowerOn } from './lib/stores/tvPowerStore.js';
   import SamsungTVHome from './lib/components/SamsungTVHome.svelte';
+  import TvPowerButton from './lib/components/TvPowerButton.svelte';
 
   let screenRef;
 
@@ -68,6 +69,9 @@
 
 <!-- 특화 미니모드 오버레이 -->
 <MiniModeSelector />
+
+<!-- 상시 노출 TV Power 버튼 -->
+<TvPowerButton />
 
 <style>
   :global(body) {

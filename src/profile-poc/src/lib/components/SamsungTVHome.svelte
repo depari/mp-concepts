@@ -1,13 +1,12 @@
 <script>
   import { focusedProfile } from '../stores/profileStore.js';
-  import { appStateStore, exitHome } from '../stores/appStateStore.js';
+  import { appStateStore } from '../stores/appStateStore.js';
   import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';
+  import { homeFocusStore } from '../stores/homeNavigationStore.js';
   import { fade, fly, scale } from 'svelte/transition';
-  import { onMount } from 'svelte';
 
   $: profile = $focusedProfile;
-
-  let focusedAppIndex = 2; // 기본 'TV Plus' 포커스
+  $: focus = $homeFocusStore;
 
   const mockApps = [
     { id: 'netflix', name: 'Netflix', color: '#E50914' },
@@ -17,21 +16,6 @@
     { id: 'disney', name: 'Disney+', color: '#0063E5' },
     { id: 'prime', name: 'Prime Video', color: '#00A8E1' }
   ];
-
-  function handleKeydown(e) {
-    if ($miniModeStore.isActive) return; // 미니 모드일 때는 홈 화면 조작 방지
-
-    if (e.key === 'ArrowLeft') {
-      focusedAppIndex = Math.max(0, focusedAppIndex - 1);
-    } else if (e.key === 'ArrowRight') {
-      focusedAppIndex = Math.min(mockApps.length - 1, focusedAppIndex + 1);
-    }
-  }
-
-  onMount(() => {
-    window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
-  });
 </script>
 
 <div 
@@ -49,7 +33,11 @@
   <!-- 로고 및 상단 GNB -->
   <header class="home-header">
     <div class="logo">SAMSUNG</div>
-    <button class="user-chip" on:click={openMiniMode}>
+    <button 
+      class="user-chip" 
+      class:focused={focus.focusedSection === 'header'}
+      on:click={openMiniMode}
+    >
       <img src={profile.avatarUrl} alt="" />
       <span>{profile.name}</span>
     </button>
@@ -62,8 +50,19 @@
       <h1>{profile.id === 'profile_1' ? '이번 주 인기 오리지널' : '당신을 위한 추천 영화'}</h1>
       <p class="desc">지금 바로 시청 중이던 콘텐츠를 이어서 감상해 보세요.</p>
       <div class="btn-group">
-        <button class="btn primary" style="background: {profile.panelAccentColor}; color: white;">지금 시청하기</button>
-        <button class="btn secondary">상세 정보</button>
+        <button 
+          class="btn primary" 
+          class:focused={focus.focusedSection === 'hero' && focus.mainBtnIndex === 0}
+          style="background: {profile.panelAccentColor}; color: white;"
+        >
+          지금 시청하기
+        </button>
+        <button 
+          class="btn secondary"
+          class:focused={focus.focusedSection === 'hero' && focus.mainBtnIndex === 1}
+        >
+          상세 정보
+        </button>
       </div>
     </div>
   </main>
@@ -71,7 +70,7 @@
   <!-- 하단 앱 바 (Launcher) -->
   <footer class="app-launcher" in:fly={{ y: 50, delay: 700, duration: 600 }}>
     {#each mockApps as app, i (app.id)}
-      <div class="app-icon-wrapper" class:focused={i === focusedAppIndex}>
+      <div class="app-icon-wrapper" class:focused={focus.focusedSection === 'apps' && i === focus.focusedAppIndex}>
         <div class="app-icon" style="background-color: {app.id === 'samsung-tv-plus' ? profile.panelAccentColor : app.color};">
           {app.name.charAt(0)}
         </div>
@@ -137,9 +136,11 @@
     font-family: inherit;
   }
 
-  .user-chip:hover {
+  .user-chip:hover, .user-chip.focused {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.05);
+    border-color: white;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
   }
 
   .user-chip img {
@@ -165,7 +166,6 @@
     max-width: 600px;
   }
   .tagline {
-    color: var(--profile-accent);
     font-weight: 700;
     margin-bottom: 8px;
   }
@@ -192,11 +192,16 @@
     font-weight: 700;
     cursor: pointer;
     border: none;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
   }
-  .btn.primary { background: white; color: black; }
   .btn.secondary { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
-  .btn:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+  
+  .btn.focused {
+    transform: scale(1.1);
+    border-color: white;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+  }
 
   .app-launcher {
     display: flex;
@@ -208,9 +213,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+  
   .app-icon {
     width: 80px;
     height: 80px;
@@ -221,12 +228,29 @@
     font-size: 2rem;
     font-weight: 900;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid transparent;
   }
-  .app-icon-wrapper:hover .app-icon {
-    transform: scale(1.15) translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    border: 3px solid white;
+
+  .app-icon-wrapper.focused {
+    transform: translateY(-15px);
+  }
+
+  .app-icon-wrapper.focused .app-icon {
+    transform: scale(1.2);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    border-color: white;
+  }
+
+  .app-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+  .focused .app-name {
+    opacity: 1;
+    color: white;
   }
 
   .deep-link-overlay {

@@ -1,8 +1,10 @@
 import { navigate, focusedIndex } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
 import { activateDashboard, deactivateDashboard, interactionStore } from '../stores/interactionStore.js';
-import { miniModeStore } from '../stores/miniModeStore.js';
-import { appStateStore } from '../stores/appStateStore.js';
+import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeStore.js';
+import { appStateStore, enterHome } from '../stores/appStateStore.js';
+import { isPowerOn } from '../stores/tvPowerStore.js';
+import { homeFocusStore, moveHomeFocus } from '../stores/homeNavigationStore.js';
 import { get } from 'svelte/store';
 
 let panelOpen = false;
@@ -10,10 +12,10 @@ isPocPanelOpen.subscribe(v => { panelOpen = v; });
 
 export function createKeyHandler(onSelect) {
   return function handleKey(e) {
-    const state = get(appStateStore);
-    const isSelectionMode = state.mode === 'selection';
+    // 1. 전원 꺼짐 처리
+    if (!get(isPowerOn)) return;
 
-    // 컨트롤 패널이 열려 있으면 Tab/Escape만 처리
+    // 2. 컨트롤 패널(Tab) 우선 처리
     if (panelOpen) {
       if (e.key === 'Escape' || e.key === 'Tab') {
         e.preventDefault();
@@ -22,48 +24,66 @@ export function createKeyHandler(onSelect) {
       return;
     }
 
-    const isDashboard = get(interactionStore).isDashboardActive;
+    const state = get(appStateStore);
     const miniMode = get(miniModeStore);
+    const homeFocus = get(homeFocusStore);
+    const isSelectionMode = state.mode === 'selection';
+    const isHomeMode = state.mode === 'home';
     const isSideMode = miniMode.isActive && (miniMode.position === 'left' || miniMode.position === 'right');
+    const isDashboard = get(interactionStore).isDashboardActive;
 
-    const actions = {
-      'ArrowLeft':  () => { 
-        if (miniMode.isActive && !isSideMode) { e.preventDefault(); navigate(-1); }
-        else if (isSelectionMode && !isSideMode) { e.preventDefault(); navigate(-1); }
-      },
-      'ArrowRight': () => { 
-        if (miniMode.isActive && !isSideMode) { e.preventDefault(); navigate(1); }
-        else if (isSelectionMode && !isSideMode) { e.preventDefault(); navigate(1); }
-      },
-      'ArrowUp':    () => { 
-        if (miniMode.isActive && isSideMode) { e.preventDefault(); navigate(-1); }
-        else {
-          e.preventDefault();
-          if (isDashboard) deactivateDashboard();
+    // 3. 미니 모드 활성화 시 네비게이션
+    if (miniMode.isActive) {
+      if (e.key === 'ArrowLeft' && !isSideMode) { e.preventDefault(); navigate(-1); }
+      if (e.key === 'ArrowRight' && !isSideMode) { e.preventDefault(); navigate(1); }
+      if (e.key === 'ArrowUp' && isSideMode) { e.preventDefault(); navigate(-1); }
+      if (e.key === 'ArrowDown' && isSideMode) { e.preventDefault(); navigate(1); }
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        enterHome();
+        toggleMiniMode();
+      }
+      if (e.key === 'Escape') { e.preventDefault(); toggleMiniMode(); }
+      return;
+    }
+
+    // 4. 홈 화면 모드 시 네비게이션
+    if (isHomeMode) {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        moveHomeFocus(e.key);
+      }
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (homeFocus.focusedSection === 'header') {
+          openMiniMode();
+        } else {
+          // TODO: 앱 실행 또는 컨텐츠 재생 로직
+          console.log('Action performed on', homeFocus.focusedSection);
         }
+      }
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleMiniMode(); }
+      return;
+    }
+
+    // 5. 프로필 선택 화면 (Selection Mode)
+    const actions = {
+      'ArrowLeft':  () => { if (!isSideMode) { e.preventDefault(); navigate(-1); } },
+      'ArrowRight': () => { if (!isSideMode) { e.preventDefault(); navigate(1); } },
+      'ArrowUp':    () => { 
+        if (isSideMode) { e.preventDefault(); navigate(-1); }
+        else if (isDashboard) { e.preventDefault(); deactivateDashboard(); }
       },
       'ArrowDown':  () => { 
-        if (miniMode.isActive && isSideMode) { e.preventDefault(); navigate(1); }
-        else {
-          e.preventDefault();
-          if (!isDashboard && isSelectionMode) activateDashboard();
-        }
+        if (isSideMode) { e.preventDefault(); navigate(1); }
+        else if (!isDashboard) { e.preventDefault(); activateDashboard(); }
       },
-      'Enter':      () => { 
-        e.preventDefault(); 
-        if (miniMode.isActive) {
-          // 미니 모드에서 Enter시 홈으로 다시 진입 (이미 홈이겠지만 상태 갱신 및 모드 닫기)
-          onSelect?.(); 
-          window.dispatchEvent(new CustomEvent('toggle-mini-mode'));
-        } else {
-          onSelect?.(); 
-        }
-      },
+      'Enter':      () => { e.preventDefault(); onSelect?.(); },
       ' ':          () => { e.preventDefault(); onSelect?.(); },
       'Tab':        () => { e.preventDefault(); togglePocPanel(); },
-      'Escape':     () => { e.preventDefault(); if (isDashboard) deactivateDashboard(); },
-      'm':          () => { e.preventDefault(); window.dispatchEvent(new CustomEvent('toggle-mini-mode')); },
-      'M':          () => { e.preventDefault(); window.dispatchEvent(new CustomEvent('toggle-mini-mode')); },
+      'Escape':     () => { if (isDashboard) { e.preventDefault(); deactivateDashboard(); } },
+      'm':          () => { e.preventDefault(); toggleMiniMode(); },
+      'M':          () => { e.preventDefault(); toggleMiniMode(); },
     };
 
     actions[e.key]?.();
