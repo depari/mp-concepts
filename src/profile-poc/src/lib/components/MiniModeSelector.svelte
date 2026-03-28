@@ -1,7 +1,7 @@
 <script>
   import { activeProfiles, focusedIndex } from '../stores/profileStore.js';
   import { miniModeStore, toggleMiniMode, setMiniModePosition } from '../stores/miniModeStore.js';
-  import { appStateStore, exitHome } from '../stores/appStateStore.js';
+  import { appStateStore, exitHome, enterHome } from '../stores/appStateStore.js';
   import { fly, fade } from 'svelte/transition';
 
   $: profiles = $activeProfiles;
@@ -48,6 +48,8 @@
             class:active={i === $focusedIndex}
             on:click={() => {
               focusedIndex.set(i);
+              enterHome();
+              toggleMiniMode();
             }}
           >
             <div class="mini-avatar" style="border-color: {i === $focusedIndex ? profile.panelAccentColor : 'transparent'}">
@@ -164,7 +166,7 @@
   }
 
   .pos-btn {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border: 1px solid transparent;
     color: #bbb;
     border-radius: 4px;
@@ -175,14 +177,14 @@
     font-weight: bold;
     transition: all 0.2s;
   }
-  .pos-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+  .pos-btn:hover { background: rgba(255, 255, 255, 0.2); color: white; }
   .pos-btn.pos-active {
     background: #007AFF;
     color: white;
     border-color: #007AFF;
   }
 
-  .div-line { color: rgba(255,255,255,0.2); margin: 0 4px; }
+  .div-line { color: rgba(255, 255, 255, 0.2); margin: 0 4px; }
 
   .close-btn {
     background: none;

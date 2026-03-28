@@ -34,20 +34,23 @@
 
 <div 
   class="home-container" 
-  style="--profile-accent: {profile.panelAccentColor};" 
+  style="
+    --profile-accent: {profile.panelAccentColor};
+    background: linear-gradient(135deg, #0f0f0f, #121212, {profile.panelAccentColor}15);
+  " 
   in:scale={{ duration: 1000, start: 1.2, opacity: 0, easing: t => t * t }} 
   out:fade
 >
   <!-- 배경 틴트 레이어 -->
-  <div class="background-tint" style="background: radial-gradient(circle at top right, {profile.panelAccentColor}22 0%, transparent 60%);"></div>
+  <div class="background-tint" style="background: radial-gradient(circle at top right, {profile.panelAccentColor}28 0%, transparent 60%);"></div>
 
   <!-- 로고 및 상단 GNB -->
   <header class="home-header">
     <div class="logo">SAMSUNG</div>
-    <div class="user-chip" role="button" tabindex="0" on:click={openMiniMode}>
+    <button class="user-chip" on:click={openMiniMode}>
       <img src={profile.avatarUrl} alt="" />
       <span>{profile.name}</span>
-    </div>
+    </button>
   </header>
 
   <!-- 메인 추천 영역 -->
@@ -57,7 +60,7 @@
       <h1>{profile.id === 'profile_1' ? '이번 주 인기 오리지널' : '당신을 위한 추천 영화'}</h1>
       <p class="desc">지금 바로 시청 중이던 콘텐츠를 이어서 감상해 보세요.</p>
       <div class="btn-group">
-        <button class="btn primary">지금 시청하기</button>
+        <button class="btn primary" style="background: {profile.panelAccentColor}; color: white;">지금 시청하기</button>
         <button class="btn secondary">상세 정보</button>
       </div>
     </div>
@@ -67,7 +70,7 @@
   <footer class="app-launcher" in:fly={{ y: 50, delay: 700, duration: 600 }}>
     {#each mockApps as app, i (app.id)}
       <div class="app-icon-wrapper" class:focused={i === focusedAppIndex}>
-        <div class="app-icon" style="background-color: {app.color};">
+        <div class="app-icon" style="background-color: {app.id === 'samsung-tv-plus' ? profile.panelAccentColor : app.color};">
           {app.name.charAt(0)}
         </div>
         <span class="app-name">{app.name}</span>
@@ -90,7 +93,7 @@
   .home-container {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #0f0f0f, #121212, var(--profile-accent)0a);
+    transition: background 0.8s ease;
     display: flex;
     flex-direction: column;
     z-index: 100;
