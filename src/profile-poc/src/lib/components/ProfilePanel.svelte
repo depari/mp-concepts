@@ -82,18 +82,20 @@
 
 <style>
   .panel {
-    flex: 1;
+    width: 12vw;
+    height: 100vh;
+    flex-shrink: 0;
     position: relative;
     overflow: hidden;
     transition:
-      flex var(--panel-transition),
+      width var(--panel-transition),
       border-radius 0.4s ease;
     cursor: pointer;
-    will-change: flex;
+    will-change: width;
   }
 
   .panel--focused {
-    flex: var(--panel-flex-focused);
+    width: 44vw;
   }
 
   .panel__overlay {
