@@ -10,6 +10,7 @@ yarn-error.log*
 pnpm-debug.log*
 .pnpm-store/
 .npm/
+package-lock.json
 
 # ----- Vite 빌드 결과물 -----
 dist/
