@@ -90,7 +90,7 @@
     width: 100%;
     max-width: 800px;
     justify-content: center;
-    padding: 10px 0;
+    padding: 24px 10px 10px;
   }
   .mini-profile-item {
     background: none;
