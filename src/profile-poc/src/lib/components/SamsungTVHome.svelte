@@ -1,6 +1,6 @@
 <script lang="ts">
   import { selectedProfile } from '../stores/profileStore.js';
-  import { appStateStore } from '../stores/appStateStore.js';
+  import { appStateStore, exitPIG } from '../stores/appStateStore.js';
   import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';
   import { homeFocusStore, moveHomeFocus, focusPIG } from '../stores/homeNavigationStore.js';
   import { 
@@ -165,12 +165,43 @@
 
   <!-- 앱 전체 화면 실행 -->
   {#if $appStateStore.mode === 'app_running'}
+    {@const content = $appStateStore.pigContent}
+    {@const provider = content?.provider_id ?? (content?.id || 'samsung')}
+    {@const brandColor = content?.iconColor ?? content?.thumbnail_gradient ?? '#1a1a1a'}
     <div class="full-app-view" transition:scale={{ duration: 600 }}>
-       <div class="app-content" style="background: {$appStateStore.pigContent?.thumbnail_gradient ?? '#000'};">
-          <h1>{$appStateStore.pigContent?.title}</h1>
-          <p>Full Screen Mode - Press ESC to return</p>
-          <div class="playback-controls">
-             <div class="progress-big"></div>
+       <div class="app-content-player" style="--brand-color: {brandColor};">
+          <!-- 상단 플레이어 UI -->
+          <div class="player-header">
+             <div class="brand-logo">{provider.toUpperCase()} PLAYER</div>
+             <button class="exit-full-btn" on:click={exitPIG}>✕ STOP</button>
+          </div>
+
+          <!-- 중앙 재생 피드백 -->
+          <div class="player-main" in:fly={{ y: 20, delay: 500 }}>
+             <div class="playback-title">
+               <span class="provider-tag">{provider}</span>
+               <h1>{content?.title ?? content?.name ?? '컨텐츠'}</h1>
+               <p class="subtitle">{content?.subtitle ?? '지금 시청 중'}</p>
+             </div>
+             
+             <!-- 재생 기호 (모킹) -->
+             <div class="playback-symbol">
+               <div class="play-icon">▶</div>
+             </div>
+          </div>
+
+          <!-- 하단 컨트롤 바 -->
+          <div class="player-controls" in:fly={{ y: 30, delay: 700 }}>
+             <div class="time-info">14:02 / 45:00</div>
+             <div class="progress-big">
+               <div class="fill" style="width: 35%;"></div>
+               <div class="buffer" style="width: 55%;"></div>
+             </div>
+             <div class="control-hints">
+               <span>◀◀ Rewind</span>
+               <span>|| Pause</span>
+               <span>▶▶ Forward</span>
+             </div>
           </div>
        </div>
     </div>
@@ -243,14 +274,6 @@
     align-items: center;
     justify-content: center;
   }
-  .app-content {
-    width: 100%; height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
 
   .home-container {
     position: fixed;
@@ -262,6 +285,127 @@
     color: white;
     font-family: var(--font-korean);
     padding: 40px 80px 20px;
+  }
+  
+  .exit-full-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .exit-full-btn:hover {
+    background: #ff4444;
+    border-color: #ff4444;
+    transform: scale(1.05);
+  }
+
+  .app-content-player {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 60px 80px;
+    border: 10px solid var(--brand-color);
+    box-sizing: border-box;
+  }
+  
+  .player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5vh;
+  }
+  .brand-logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--brand-color);
+    letter-spacing: 2px;
+  }
+
+  .player-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .provider-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--brand-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .player-main h1 {
+    font-size: 4rem;
+    margin: 0 0 10px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  }
+  .subtitle { font-size: 1.5rem; opacity: 0.6; }
+
+  .playback-symbol {
+    margin-top: 50px;
+  }
+  .play-icon {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 4px solid white;
+    display: flex;
+    align-items: center; justify-content: center;
+    font-size: 3rem;
+    padding-left: 10px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .player-controls {
+    margin-top: auto;
+    width: 100%;
+  }
+  .time-info { font-size: 1.1rem; margin-bottom: 10px; font-weight: 600; opacity: 0.8;}
+  .progress-big {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-big .fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--brand-color);
+    z-index: 2;
+  }
+  .progress-big .buffer {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: rgba(255,255,255,0.2);
+    z-index: 1;
+  }
+  .control-hints {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 24px;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.4);
+    font-weight: 700;
   }
 
   .scroll-container {
