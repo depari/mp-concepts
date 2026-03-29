@@ -1,4 +1,4 @@
-import { navigate, focusedIndex } from '../stores/profileStore.js';
+import { navigate, focusedIndex, selectProfile } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
 import { activateDashboard, deactivateDashboard, activateContentHub, deactivateContentHub, interactionStore } from '../stores/interactionStore.js';
 import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeStore.js';
@@ -49,6 +49,7 @@ export function createKeyHandler(onSelect) {
       if (e.key === 'ArrowDown' && isSideMode) { e.preventDefault(); navigate(1); }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        selectProfile();
         enterHome();
         toggleMiniMode();
       }

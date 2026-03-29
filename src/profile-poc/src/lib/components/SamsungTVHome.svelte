@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { focusedProfile } from '../stores/profileStore.js';
+  import { selectedProfile } from '../stores/profileStore.js';
   import { appStateStore } from '../stores/appStateStore.js';
   import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';
   import { homeFocusStore } from '../stores/homeNavigationStore.js';
   import { profileRecentApps, profileRecentContents } from '../stores/contentDiscoveryStore.js';
   import { fade, fly, scale } from 'svelte/transition';
 
-  $: profile = $focusedProfile;
+  $: profile = $selectedProfile;
   $: focus = $homeFocusStore;
   
   $: apps = $profileRecentApps.length > 0 ? $profileRecentApps : [];

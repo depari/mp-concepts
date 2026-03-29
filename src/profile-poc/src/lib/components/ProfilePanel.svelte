@@ -5,6 +5,7 @@
   import { interactionStore } from '../stores/interactionStore.js';
   import { previewContentStore } from '../stores/previewContentStore.js';
   import { enterHome } from '../stores/appStateStore.js';
+  import { selectProfile } from '../stores/profileStore.js';
 
   export let profile: any;
   export let isFocused: boolean = false;
@@ -13,6 +14,7 @@
 
   export function handleEnter() {
     if (isFocused) {
+      selectProfile();
       enterHome();
     }
   }

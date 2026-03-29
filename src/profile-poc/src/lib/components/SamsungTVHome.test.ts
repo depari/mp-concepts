@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/svelte';
 import SamsungTVHome from './SamsungTVHome.svelte';
-import { focusedIndex } from '../stores/profileStore.js';
+import { selectedIndex } from '../stores/profileStore.js';
 
 describe('SamsungTVHome.svelte', () => {
   beforeEach(() => {
-    // profile_1 (지은)을 포커스로 설정
-    focusedIndex.set(0); 
+    // profile_1 (지은)을 선택된 상태로 설정
+    selectedIndex.set(0); 
   });
 
   it('홈 화면에서 mockData가 아닌 profileRecentApps 스토어의 앱을 렌더링해야 한다', () => {

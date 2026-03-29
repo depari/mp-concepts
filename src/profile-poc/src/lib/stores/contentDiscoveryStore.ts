@@ -2,7 +2,7 @@
 // Full Mode 컨텐츠 탐색 허브의 섹션 포커스 및 데이터 관리
 
 import { writable, derived } from 'svelte/store';
-import { focusedProfile } from './profileStore.js';
+import { selectedProfile } from './profileStore.js';
 import { NEWS_ITEMS } from '../data/news.js';
 
 // ── 섹션 순서 정의 ─────────────────────────────────────────
@@ -18,26 +18,26 @@ export const discoveryFocusStore = writable({
 
 // ── 현재 프로파일의 최근 실행 앱 (derived) ─────────────────
 export const profileRecentApps = derived(
-  focusedProfile,
+  selectedProfile,
   ($profile) => $profile?.recentApps ?? []
 );
 
 // ── 현재 프로파일의 이어보기 컨텐츠 (derived) ──────────────
 export const profileRecentContents = derived(
-  focusedProfile,
+  selectedProfile,
   ($profile) => $profile?.recentContents ?? []
 );
 
 // ── 현재 프로파일의 추천 컨텐츠 (derived) ──────────────────
 export const profileRecommendedContents = derived(
-  focusedProfile,
+  selectedProfile,
   ($profile) => $profile?.recommendedContents ?? []
 );
 
 // ── 뉴스 필터링: 프로파일 관심사 기반 (derived) ─────────────
 // interestTags가 없으면 NEWS_ITEMS 앞 4건을 기본 반환
 export const profileFilteredNews = derived(
-  focusedProfile,
+  selectedProfile,
   ($profile) => {
     const tags = $profile?.interestTags ?? [];
     if (tags.length === 0) return NEWS_ITEMS.slice(0, 4);
