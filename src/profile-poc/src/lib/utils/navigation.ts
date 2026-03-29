@@ -2,7 +2,7 @@ import { navigate, focusedIndex, selectProfile } from '../stores/profileStore.js
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
 import { activateDashboard, deactivateDashboard, activateContentHub, deactivateContentHub, interactionStore } from '../stores/interactionStore.js';
 import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeStore.js';
-import { appStateStore, enterHome, exitHome, cancelDeepLink } from '../stores/appStateStore.js';
+import { appStateStore, enterHome, exitHome, cancelDeepLink, enterAppFull, exitPIG } from '../stores/appStateStore.js';
 import { isPowerOn } from '../stores/tvPowerStore.js';
 import { homeFocusStore, moveHomeFocus } from '../stores/homeNavigationStore.js';
 import { homeRecentApps, homeRecentContents, homeRecommendedContents, homeFilteredNews } from '../stores/contentDiscoveryStore.js';
@@ -58,8 +58,9 @@ export function createKeyHandler(onSelect) {
       return;
     }
 
-    // 4. 홈 화면 모드 시 네비게이션
-    if (isHomeMode) {
+    // 4. 홈 화면 모드 시 네비게이션 (PIG 모드 포함)
+    const isPIG = state.mode === 'pig';
+    if (isHomeMode || isPIG) {
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
         
@@ -71,20 +72,36 @@ export function createKeyHandler(onSelect) {
           news: get(homeFilteredNews).length
         };
         
-        moveHomeFocus(e.key, counts);
+        moveHomeFocus(e.key, counts, state.mode);
       }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        if (homeFocus.focusedSection === 'header') {
+        if (isPIG) {
+          enterAppFull();
+        } else if (homeFocus.focusedSection === 'header') {
           openMiniMode();
         } else {
-          // TODO: 앱 실행 또는 컨텐츠 재생 로직
+          // TODO: 메인 화면에서의 앱 실행 로직 (현재는 PIG 시뮬레이션 위주)
           console.log('Action performed on', homeFocus.focusedSection);
         }
+      }
+      if (e.key === 'Escape' && isPIG) {
+        e.preventDefault();
+        exitPIG();
       }
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleMiniMode(); }
       return;
     }
+
+    // 4.1 앱 실행 중 (전체 화면)
+    if (state.mode === 'app_running') {
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        exitPIG();
+      }
+      return;
+    }
+
 
     // 5. 딥링크 화면 (Loading / App Launching 모드)
     if (state.mode === 'deep_link') {

@@ -36,8 +36,8 @@ export const homeRecentApps = derived(
   selectedProfile,
   ($profile) => {
     const profileApps = $profile?.recentApps ?? [];
-    // 공통 앱을 앞에, 프로필 앱을 뒤에 합침 (유동적)
-    return [...COMMON_APPS, ...profileApps];
+    // 프로필 앱을 앞에, 공통 앱을 뒤에 합침
+    return [...profileApps, ...COMMON_APPS];
   }
 );
 
@@ -45,7 +45,8 @@ export const homeRecentContents = derived(
   selectedProfile,
   ($profile) => {
     const profileContents = $profile?.recentContents ?? [];
-    return [...COMMON_CONTENTS, ...profileContents];
+    // 프로필 컨텐츠를 앞에, 공통 컨텐츠를 뒤에
+    return [...profileContents, ...COMMON_CONTENTS];
   }
 );
 
@@ -53,7 +54,8 @@ export const homeRecommendedContents = derived(
   selectedProfile,
   ($profile) => {
     const profileRec = $profile?.recommendedContents ?? [];
-    return [...COMMON_RECOMMENDED, ...profileRec];
+    // 프로필 추천을 앞에, 공통 추천을 뒤에
+    return [...profileRec, ...COMMON_RECOMMENDED];
   }
 );
 

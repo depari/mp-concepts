@@ -2,7 +2,7 @@
   import { selectedProfile } from '../stores/profileStore.js';
   import { appStateStore } from '../stores/appStateStore.js';
   import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';
-  import { homeFocusStore } from '../stores/homeNavigationStore.js';
+  import { homeFocusStore, moveHomeFocus, focusPIG } from '../stores/homeNavigationStore.js';
   import { 
     homeRecentApps, 
     homeRecentContents, 
@@ -22,9 +22,15 @@
 
   afterUpdate(() => {
     if (typeof document !== 'undefined') {
-      const activeSection = document.querySelector('.active-section');
-      if (activeSection) {
-        activeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const scrollContainer = document.querySelector('.scroll-container');
+      
+      if (focus.focusedSection === 'header' && scrollContainer) {
+        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const activeSection = document.querySelector('.active-section');
+        if (activeSection) {
+          activeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     }
   });
@@ -35,6 +41,11 @@
   $: newsItems = $homeFilteredNews;
   
   $: mainContent = recentContents.length > 0 ? recentContents[0] : null;
+  
+  // PIG 모드 진입 시 자동 포커스
+  $: if ($appStateStore.mode === 'pig') {
+    focusPIG();
+  }
 </script>
 
 <div 
@@ -133,9 +144,114 @@
       </div>
     </div>
   {/if}
+
+  <!-- PIG 플레이어 (작은 재생창) -->
+  {#if $appStateStore.mode === 'pig'}
+    <div class="pig-player-wrapper" transition:fly={{ x: 100, duration: 500 }}>
+       <div class="pig-container" class:focused={focus.focusedSection === 'pig'}>
+          <div class="pig-video" style="background: {$appStateStore.pigContent?.thumbnail_gradient ?? '#000'};">
+             <div class="playing-indicator">LIVE</div>
+             <div class="playback-ui">
+                <p class="pig-title">{$appStateStore.pigContent?.title ?? '재생 중...'}</p>
+                <div class="progress-bar"><div class="fill" style="width: 35%;"></div></div>
+             </div>
+          </div>
+          <div class="pig-hint" in:fade={{ delay: 300 }}>
+             <span class="key">Enter</span> 전체 화면으로 이동
+          </div>
+       </div>
+    </div>
+  {/if}
+
+  <!-- 앱 전체 화면 실행 -->
+  {#if $appStateStore.mode === 'app_running'}
+    <div class="full-app-view" transition:scale={{ duration: 600 }}>
+       <div class="app-content" style="background: {$appStateStore.pigContent?.thumbnail_gradient ?? '#000'};">
+          <h1>{$appStateStore.pigContent?.title}</h1>
+          <p>Full Screen Mode - Press ESC to return</p>
+          <div class="playback-controls">
+             <div class="progress-big"></div>
+          </div>
+       </div>
+    </div>
+  {/if}
 </div>
 
 <style>
+  /* PIG 및 앱 오버레이 스타일 */
+  .pig-player-wrapper {
+    position: absolute;
+    top: 60px;
+    right: 80px;
+    z-index: 500;
+  }
+  .pig-container {
+    width: 320px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    border: 3px solid transparent;
+    transition: all 0.3s ease;
+  }
+  .pig-container.focused {
+    border-color: var(--profile-accent);
+    transform: scale(1.05);
+  }
+  .pig-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .playing-indicator {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #ff0000;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 800;
+  }
+  .playback-ui {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    padding: 8px;
+    background: linear-gradient(transparent, black);
+  }
+  .pig-title { font-size: 0.8rem; margin: 0 0 4px; font-weight: 600; }
+  .progress-bar { height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; }
+  .progress-bar .fill { height: 100%; background: var(--profile-accent); }
+  .pig-hint {
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+  }
+  .pig-hint .key {
+    background: white; color: black; padding: 1px 6px; border-radius: 4px; font-weight: bold; margin-right: 4px;
+  }
+
+  .full-app-view {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .app-content {
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
   .home-container {
     position: fixed;
     inset: 0;

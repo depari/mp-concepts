@@ -19,7 +19,7 @@
     deactivateContentHub
   } from '../stores/interactionStore.js';
   import { triggerDeepLink } from '../stores/appStateStore.js';
-  import { focusedProfile } from '../stores/profileStore.js';
+  import { focusedProfile, selectProfile } from '../stores/profileStore.js';
 
   import ContentSectionHeader from './ContentSectionHeader.svelte';
   import AppShortcutRow from './AppShortcutRow.svelte';
@@ -133,20 +133,23 @@
     if (section === 'apps') {
       const app = recentApps[cardIndex];
       if (app) {
+        selectProfile();
         deactivateContentHub();
-        triggerDeepLink(app.deepLinkId);
+        triggerDeepLink(app.deepLinkId, app);
       }
     } else if (section === 'recents') {
       const item = recentContents[cardIndex];
       if (item) {
+        selectProfile();
         deactivateContentHub();
-        triggerDeepLink(item.deepLinkId);
+        triggerDeepLink(item.deepLinkId, item);
       }
     } else if (section === 'recommended') {
       const item = recommended[cardIndex];
       if (item) {
+        selectProfile();
         deactivateContentHub();
-        triggerDeepLink(item.deepLinkId);
+        triggerDeepLink(item.deepLinkId, item);
       }
     }
     // 뉴스는 Enter 시 별도 처리 없음 (POC)
