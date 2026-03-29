@@ -1,10 +1,11 @@
-import { navigate, focusedIndex } from '../stores/profileStore.js';
+import { navigate, focusedIndex, selectProfile } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
-import { activateDashboard, deactivateDashboard, interactionStore } from '../stores/interactionStore.js';
+import { activateDashboard, deactivateDashboard, activateContentHub, deactivateContentHub, interactionStore } from '../stores/interactionStore.js';
 import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeStore.js';
-import { appStateStore, enterHome, exitHome } from '../stores/appStateStore.js';
+import { appStateStore, enterHome, exitHome, cancelDeepLink, enterAppFull, exitPIG } from '../stores/appStateStore.js';
 import { isPowerOn } from '../stores/tvPowerStore.js';
 import { homeFocusStore, moveHomeFocus } from '../stores/homeNavigationStore.js';
+import { homeRecentApps, homeRecentContents, homeRecommendedContents, homeFilteredNews } from '../stores/contentDiscoveryStore.js';
 import { get } from 'svelte/store';
 
 let panelOpen = false;
@@ -31,6 +32,7 @@ export function createKeyHandler(onSelect) {
     const isHomeMode = state.mode === 'home';
     const isSideMode = miniMode.isActive && (miniMode.position === 'left' || miniMode.position === 'right');
     const isDashboard = get(interactionStore).isDashboardActive;
+    const isContentHub = get(interactionStore).isContentHubActive;
 
     // 3. 미니 모드 활성화 시 네비게이션
     if (miniMode.isActive) {
@@ -48,6 +50,7 @@ export function createKeyHandler(onSelect) {
       if (e.key === 'ArrowDown' && isSideMode) { e.preventDefault(); navigate(1); }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        selectProfile();
         enterHome();
         toggleMiniMode();
       }
@@ -55,36 +58,73 @@ export function createKeyHandler(onSelect) {
       return;
     }
 
-    // 4. 홈 화면 모드 시 네비게이션
-    if (isHomeMode) {
+    // 4. 홈 화면 모드 시 네비게이션 (PIG 모드 포함)
+    const isPIG = state.mode === 'pig';
+    if (isHomeMode || isPIG) {
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
-        moveHomeFocus(e.key);
+        
+        // 실시간 데이터 개수 확인
+        const counts = {
+          apps: get(homeRecentApps).length,
+          recents: get(homeRecentContents).length,
+          recommended: get(homeRecommendedContents).length,
+          news: get(homeFilteredNews).length
+        };
+        
+        moveHomeFocus(e.key, counts, state.mode);
       }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        if (homeFocus.focusedSection === 'header') {
+        if (isPIG) {
+          enterAppFull();
+        } else if (homeFocus.focusedSection === 'header') {
           openMiniMode();
         } else {
-          // TODO: 앱 실행 또는 컨텐츠 재생 로직
+          // TODO: 메인 화면에서의 앱 실행 로직 (현재는 PIG 시뮬레이션 위주)
           console.log('Action performed on', homeFocus.focusedSection);
         }
+      }
+      if (e.key === 'Escape' && isPIG) {
+        e.preventDefault();
+        exitPIG();
       }
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleMiniMode(); }
       return;
     }
 
-    // 5. 프로필 선택 화면 (Selection Mode)
+    // 4.1 앱 실행 중 (전체 화면)
+    if (state.mode === 'app_running') {
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        exitPIG();
+      }
+      return;
+    }
+
+
+    // 5. 딥링크 화면 (Loading / App Launching 모드)
+    if (state.mode === 'deep_link') {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelDeepLink();
+      } else {
+        // 다른 키 입력 무시 (프로필 변경 방지)
+        e.preventDefault();
+      }
+      return;
+    }
+
+    // 6. 프로필 선택 화면 (Selection Mode)
     const actions = {
-      'ArrowLeft':  () => { if (!isSideMode) { e.preventDefault(); navigate(-1); } },
-      'ArrowRight': () => { if (!isSideMode) { e.preventDefault(); navigate(1); } },
+      'ArrowLeft':  () => { if (!isSideMode && !isContentHub) { e.preventDefault(); navigate(-1); } },
+      'ArrowRight': () => { if (!isSideMode && !isContentHub) { e.preventDefault(); navigate(1); } },
       'ArrowUp':    () => { 
         if (isSideMode) { e.preventDefault(); navigate(-1); }
-        else if (isDashboard) { e.preventDefault(); deactivateDashboard(); }
       },
       'ArrowDown':  () => { 
         if (isSideMode) { e.preventDefault(); navigate(1); }
-        else if (!isDashboard) { e.preventDefault(); activateDashboard(); }
+        else { e.preventDefault(); activateContentHub(); }
       },
       'Enter':      () => { e.preventDefault(); onSelect?.(); },
       ' ':          () => { e.preventDefault(); onSelect?.(); },

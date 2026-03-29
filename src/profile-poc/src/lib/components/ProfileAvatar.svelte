@@ -1,6 +1,13 @@
-<script>
-  export let profile;
-  export let isFocused = false;
+<script lang="ts">
+  export let profile: any;
+  export let isFocused: boolean = false;
+
+  function handleError(e: Event) {
+    const target = e.target as HTMLImageElement;
+    if (target) {
+      target.style.display = 'none';
+    }
+  }
 </script>
 
 <div class="avatar-wrapper" class:focused={isFocused}>
@@ -10,7 +17,7 @@
       src={profile.avatarUrl}
       alt="{profile.name} 아바타"
       loading="lazy"
-      on:error={(e) => { e.target.style.display = 'none'; }}
+      on:error={handleError}
     />
   {/if}
   <!-- 아바타 없을 때 폴백: 이니셜 -->

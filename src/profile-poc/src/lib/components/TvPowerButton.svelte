@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { isPowerOn, togglePower } from '../stores/tvPowerStore.js';
   import { exitHome } from '../stores/appStateStore.js';
   import { closeMiniMode } from '../stores/miniModeStore.js';

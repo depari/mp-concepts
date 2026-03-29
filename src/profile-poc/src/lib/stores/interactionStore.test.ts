@@ -4,7 +4,7 @@ import { interactionStore, activateDashboard, deactivateDashboard } from './inte
 
 describe('interactionStore (Manual Trigger)', () => {
   beforeEach(() => {
-    interactionStore.set({ isDashboardActive: false });
+    interactionStore.set({ isDashboardActive: false, isContentHubActive: false });
   });
 
   it('activateDashboard 함수를 호출하면 isDashboardActive가 true가 되어야 한다', () => {
@@ -14,7 +14,7 @@ describe('interactionStore (Manual Trigger)', () => {
   });
 
   it('deactivateDashboard 함수를 호출하면 isDashboardActive가 false가 되어야 한다', () => {
-    interactionStore.set({ isDashboardActive: true });
+    interactionStore.set({ isDashboardActive: true, isContentHubActive: false });
     deactivateDashboard();
     expect(get(interactionStore).isDashboardActive).toBe(false);
   });

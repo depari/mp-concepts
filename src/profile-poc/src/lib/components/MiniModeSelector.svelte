@@ -1,5 +1,5 @@
-<script>
-  import { activeProfiles, focusedIndex } from '../stores/profileStore.js';
+<script lang="ts">
+  import { activeProfiles, focusedIndex, selectProfile } from '../stores/profileStore.js';
   import { miniModeStore, toggleMiniMode, setMiniModePosition } from '../stores/miniModeStore.js';
   import { appStateStore, exitHome, enterHome } from '../stores/appStateStore.js';
   import { fly, fade } from 'svelte/transition';
@@ -48,6 +48,7 @@
             class:active={i === $focusedIndex}
             on:click={() => {
               focusedIndex.set(i);
+              selectProfile();
               enterHome();
               toggleMiniMode();
             }}

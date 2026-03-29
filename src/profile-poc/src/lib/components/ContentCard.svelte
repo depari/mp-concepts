@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   export let title = '';
   export let episode = '';
   export let progress = 0; // 0 to 100 지원

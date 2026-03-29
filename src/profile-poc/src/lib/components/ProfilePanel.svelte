@@ -1,18 +1,20 @@
-<script>
+<script lang="ts">
   import { fly, fade } from 'svelte/transition';
   import ProfileAvatar from './ProfileAvatar.svelte';
   import ContentCard from './ContentCard.svelte';
   import { interactionStore } from '../stores/interactionStore.js';
   import { previewContentStore } from '../stores/previewContentStore.js';
-  import { appStateStore, enterHome } from '../stores/appStateStore.js';
+  import { enterHome } from '../stores/appStateStore.js';
+  import { selectProfile } from '../stores/profileStore.js';
 
-  export let profile;
-  export let isFocused = false;
+  export let profile: any;
+  export let isFocused: boolean = false;
 
-  $: hidePanelBottom = isFocused && $interactionStore.isDashboardActive;
+  $: hidePanelBottom = isFocused && ($interactionStore.isDashboardActive || $interactionStore.isContentHubActive);
 
   export function handleEnter() {
     if (isFocused) {
+      selectProfile();
       enterHome();
     }
   }

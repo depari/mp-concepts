@@ -1,11 +1,14 @@
-<script>
+<script lang="ts">
   import { activeProfiles, focusedIndex } from '../stores/profileStore.js';
   import ProfilePanel from './ProfilePanel.svelte';
   import ProfileDashboard from './ProfileDashboard.svelte';
-  import { resetDashboard } from '../stores/interactionStore.js';
+  import FullModeContentHub from './FullModeContentHub.svelte';
+  import { interactionStore, resetDashboard } from '../stores/interactionStore.js';
   import { fetchPreviewContent } from '../stores/previewContentStore.js';
 
   let panels = [];
+
+  $: isContentHubActive = $interactionStore.isContentHubActive;
 
   export function handleEnter() {
     if (panels[$focusedIndex]) {
@@ -54,6 +57,11 @@
 
   {#if $activeProfiles[$focusedIndex]}
     <ProfileDashboard profile={$activeProfiles[$focusedIndex]} />
+  {/if}
+
+  <!-- Full Mode 컨텐츠 탐색 허브 -->
+  {#if isContentHubActive}
+    <FullModeContentHub />
   {/if}
 </div>
 

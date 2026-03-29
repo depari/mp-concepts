@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import ProfileScreen from './lib/components/ProfileScreen.svelte';
   import Header from './lib/components/Header.svelte';
@@ -41,7 +41,7 @@
 <div class="tv-background"></div>
 
 <!-- 화면 전환 로직 -->
-{#if $appStateStore.mode === 'home' || $appStateStore.mode === 'deep_link'}
+{#if $appStateStore.mode === 'home' || $appStateStore.mode === 'deep_link' || $appStateStore.mode === 'pig' || $appStateStore.mode === 'app_running'}
   <SamsungTVHome />
 {/if}
 

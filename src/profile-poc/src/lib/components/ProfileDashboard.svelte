@@ -1,9 +1,10 @@
-<script>
+<script lang="ts">
   import { fade, fly } from 'svelte/transition';
   import { onMount } from 'svelte';
   import { previewContentStore } from '../stores/previewContentStore.js';
   import { interactionStore, deactivateDashboard } from '../stores/interactionStore.js';
   import { triggerDeepLink } from '../stores/appStateStore.js';
+  import { selectProfile } from '../stores/profileStore.js';
 
   export let profile;
 
@@ -31,8 +32,9 @@
       const target = data[focusedCardIndex];
       if (target) {
         // 대시보드 닫고 딥링크 실행
+        selectProfile();
         deactivateDashboard();
-        triggerDeepLink(target.provider_id);
+        triggerDeepLink(target.provider_id, target);
       }
       e.stopImmediatePropagation();
     }
@@ -64,8 +66,9 @@
               in:fly={{ y: 30, delay: 300 + index * 100, duration: 400 }}
               on:click={() => {
                 focusedCardIndex = index;
+                selectProfile();
                 deactivateDashboard();
-                triggerDeepLink(item.provider_id);
+                triggerDeepLink(item.provider_id, item);
               }}
             >
               <div class="card-image">
