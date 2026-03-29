@@ -25,7 +25,9 @@
     display: flex;
     gap: 20px;
     align-items: flex-end;
-    padding: 8px 4px 12px;
+    /* 포커스시 transform: scale() 잘림 방지를 위해 넉넉한 패딩 확보 */
+    padding: 24px 12px 36px;
+    margin: -16px -8px -24px;
     overflow-x: auto;
     scrollbar-width: none;
   }

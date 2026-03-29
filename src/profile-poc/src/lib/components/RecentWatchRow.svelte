@@ -27,7 +27,9 @@
     display: flex;
     gap: 20px;
     overflow-x: auto;
-    padding: 6px 4px 12px;
+    /* 포커스시 transform: scale() 잘림 방지를 위해 넉넉한 패딩 확보 및 보정 여백 추가 */
+    padding: 24px 12px 36px;
+    margin: -18px -8px -24px;
     scrollbar-width: none;
     align-items: flex-start;
   }

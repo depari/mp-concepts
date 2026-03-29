@@ -3,19 +3,14 @@
   import { appStateStore } from '../stores/appStateStore.js';
   import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';
   import { homeFocusStore } from '../stores/homeNavigationStore.js';
+  import { profileRecentApps, profileRecentContents } from '../stores/contentDiscoveryStore.js';
   import { fade, fly, scale } from 'svelte/transition';
 
   $: profile = $focusedProfile;
   $: focus = $homeFocusStore;
-
-  const mockApps = [
-    { id: 'netflix', name: 'Netflix', color: '#E50914' },
-    { id: 'youtube', name: 'YouTube', color: '#FF0000' },
-    { id: 'samsung-tv-plus', name: 'TV Plus', color: '#1B4FD8' },
-    { id: 'tving', name: 'TVING', color: '#FF153C' },
-    { id: 'disney', name: 'Disney+', color: '#0063E5' },
-    { id: 'prime', name: 'Prime Video', color: '#00A8E1' }
-  ];
+  
+  $: apps = $profileRecentApps.length > 0 ? $profileRecentApps : [];
+  $: mainContent = $profileRecentContents.length > 0 ? $profileRecentContents[0] : null;
 </script>
 
 <div 
@@ -47,8 +42,8 @@
   <main class="home-main">
     <div class="recommendation-card" in:fly={{ y: 80, delay: 500, duration: 800 }}>
       <p class="tagline" style="color: {profile.panelAccentColor};">Welcome back, {profile.name}!</p>
-      <h1>{profile.id === 'profile_1' ? '이번 주 인기 오리지널' : '당신을 위한 추천 영화'}</h1>
-      <p class="desc">지금 바로 시청 중이던 콘텐츠를 이어서 감상해 보세요.</p>
+      <h1>{mainContent ? mainContent.title : '당신을 위한 추천 영화'}</h1>
+      <p class="desc">{mainContent && mainContent.subtitle ? mainContent.subtitle : '지금 바로 시청 중이던 콘텐츠를 이어서 감상해 보세요.'}</p>
       <div class="btn-group">
         <button 
           class="btn primary" 
@@ -69,10 +64,10 @@
 
   <!-- 하단 앱 바 (Launcher) -->
   <footer class="app-launcher" in:fly={{ y: 50, delay: 700, duration: 600 }}>
-    {#each mockApps as app, i (app.id)}
+    {#each apps as app, i (app.id)}
       <div class="app-icon-wrapper" class:focused={focus.focusedSection === 'apps' && i === focus.focusedAppIndex}>
-        <div class="app-icon" style="background-color: {app.id === 'samsung-tv-plus' ? profile.panelAccentColor : app.color};">
-          {app.name.charAt(0)}
+        <div class="app-icon" style="background-color: {app.iconColor};">
+          {app.iconInitial || app.name.charAt(0)}
         </div>
         <span class="app-name">{app.name}</span>
       </div>

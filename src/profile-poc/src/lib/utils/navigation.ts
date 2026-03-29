@@ -1,6 +1,6 @@
 import { navigate, focusedIndex } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
-import { activateDashboard, deactivateDashboard, interactionStore } from '../stores/interactionStore.js';
+import { activateDashboard, deactivateDashboard, activateContentHub, deactivateContentHub, interactionStore } from '../stores/interactionStore.js';
 import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeStore.js';
 import { appStateStore, enterHome, exitHome } from '../stores/appStateStore.js';
 import { isPowerOn } from '../stores/tvPowerStore.js';
@@ -31,6 +31,7 @@ export function createKeyHandler(onSelect) {
     const isHomeMode = state.mode === 'home';
     const isSideMode = miniMode.isActive && (miniMode.position === 'left' || miniMode.position === 'right');
     const isDashboard = get(interactionStore).isDashboardActive;
+    const isContentHub = get(interactionStore).isContentHubActive;
 
     // 3. 미니 모드 활성화 시 네비게이션
     if (miniMode.isActive) {
@@ -74,17 +75,28 @@ export function createKeyHandler(onSelect) {
       return;
     }
 
-    // 5. 프로필 선택 화면 (Selection Mode)
+    // 5. 딥링크 화면 (Loading / App Launching 모드)
+    if (state.mode === 'deep_link') {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        appStateStore.update(s => ({ ...s, mode: 'selection', deepLinkTarget: null }));
+      } else {
+        // 다른 키 입력 무시 (프로필 변경 방지)
+        e.preventDefault();
+      }
+      return;
+    }
+
+    // 6. 프로필 선택 화면 (Selection Mode)
     const actions = {
-      'ArrowLeft':  () => { if (!isSideMode) { e.preventDefault(); navigate(-1); } },
-      'ArrowRight': () => { if (!isSideMode) { e.preventDefault(); navigate(1); } },
+      'ArrowLeft':  () => { if (!isSideMode && !isContentHub) { e.preventDefault(); navigate(-1); } },
+      'ArrowRight': () => { if (!isSideMode && !isContentHub) { e.preventDefault(); navigate(1); } },
       'ArrowUp':    () => { 
         if (isSideMode) { e.preventDefault(); navigate(-1); }
-        else if (isDashboard) { e.preventDefault(); deactivateDashboard(); }
       },
       'ArrowDown':  () => { 
         if (isSideMode) { e.preventDefault(); navigate(1); }
-        else if (!isDashboard) { e.preventDefault(); activateDashboard(); }
+        else { e.preventDefault(); activateContentHub(); }
       },
       'Enter':      () => { e.preventDefault(); onSelect?.(); },
       ' ':          () => { e.preventDefault(); onSelect?.(); },

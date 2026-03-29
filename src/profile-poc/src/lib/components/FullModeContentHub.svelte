@@ -51,7 +51,30 @@
     weekday: 'long'
   });
 
-  const SECTIONS_ORDER = ['apps', 'recents', 'recommended', 'news'];
+  const SECTIONS_ORDER = ['apps', 'recents', 'recommended', 'news'] as const;
+  type SectionType = typeof SECTIONS_ORDER[number];
+  
+  const sectionRefs: Record<SectionType, HTMLElement | null> = {
+    apps: null,
+    recents: null,
+    recommended: null,
+    news: null
+  };
+
+  function scrollOnFocus(section: SectionType) {
+    const el = sectionRefs[section];
+    if (el) {
+      el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
+    }
+  }
+
+  $: if (focus.section) {
+    scrollOnFocus(focus.section as SectionType);
+  }
 
   // 허브 진입 시 포커스 초기화
   onMount(() => {
@@ -64,7 +87,11 @@
 
     switch (e.key) {
       case 'ArrowUp':
-        moveSection(-1);
+        if (section === 'apps') {
+          deactivateContentHub();
+        } else {
+          moveSection(-1);
+        }
         e.stopImmediatePropagation();
         e.preventDefault();
         break;
@@ -155,6 +182,7 @@
       class="hub-section"
       class:hub-section--focused={focus.section === 'apps'}
       in:fly={{ y: 30, delay: 160, duration: 400 }}
+      bind:this={sectionRefs.apps}
     >
       <ContentSectionHeader icon="🕐" title="최근 실행 앱" />
       <AppShortcutRow
@@ -171,6 +199,7 @@
       class="hub-section"
       class:hub-section--focused={focus.section === 'recents'}
       in:fly={{ y: 30, delay: 260, duration: 400 }}
+      bind:this={sectionRefs.recents}
     >
       <ContentSectionHeader icon="📺" title="이어보기" />
       <RecentWatchRow
@@ -188,6 +217,7 @@
       class="hub-section"
       class:hub-section--focused={focus.section === 'recommended'}
       in:fly={{ y: 30, delay: 360, duration: 400 }}
+      bind:this={sectionRefs.recommended}
     >
       <ContentSectionHeader icon="✨" title="{profile?.name}님을 위한 추천" />
       <RecommendedRow
@@ -204,6 +234,7 @@
       class="hub-section"
       class:hub-section--focused={focus.section === 'news'}
       in:fly={{ y: 30, delay: 460, duration: 400 }}
+      bind:this={sectionRefs.news}
     >
       <ContentSectionHeader icon="📰" title="오늘의 뉴스" />
       <NewsCardRow
@@ -318,7 +349,12 @@
     flex-direction: column;
     gap: 0;
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .hub-sections::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
   }
 
   /* 개별 섹션 */

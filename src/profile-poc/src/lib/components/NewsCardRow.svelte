@@ -25,7 +25,9 @@
     display: flex;
     gap: 18px;
     overflow-x: auto;
-    padding: 6px 4px 12px;
+    /* 포커스 클리핑 방지 패딩/마진 확보 */
+    padding: 24px 12px 36px;
+    margin: -18px -8px -24px;
     scrollbar-width: none;
     align-items: stretch;
   }
