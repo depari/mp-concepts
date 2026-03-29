@@ -19,7 +19,11 @@ export function exitHome() {
   appStateStore.update(s => ({ ...s, mode: APP_MODES.SELECTION }));
 }
 
+let deepLinkTimeout = null;
+
 export function triggerDeepLink(target) {
+  if (deepLinkTimeout) clearTimeout(deepLinkTimeout);
+
   appStateStore.update(s => ({ 
     ...s, 
     mode: APP_MODES.DEEP_LINK,
@@ -27,7 +31,16 @@ export function triggerDeepLink(target) {
   }));
   
   // 3초 뒤에 홈 화면으로 복귀하거나 안내 메시지 표시 종료 (시뮬레이션)
-  setTimeout(() => {
+  deepLinkTimeout = setTimeout(() => {
     appStateStore.set({ mode: APP_MODES.HOME, deepLinkTarget: null });
+    deepLinkTimeout = null;
   }, 3000);
+}
+
+export function cancelDeepLink() {
+  if (deepLinkTimeout) {
+    clearTimeout(deepLinkTimeout);
+    deepLinkTimeout = null;
+  }
+  appStateStore.update(s => ({ ...s, mode: APP_MODES.SELECTION, deepLinkTarget: null }));
 }

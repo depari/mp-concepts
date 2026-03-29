@@ -2,7 +2,7 @@ import { navigate, focusedIndex } from '../stores/profileStore.js';
 import { togglePocPanel, isPocPanelOpen } from '../stores/pocConfigStore.js';
 import { activateDashboard, deactivateDashboard, activateContentHub, deactivateContentHub, interactionStore } from '../stores/interactionStore.js';
 import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeStore.js';
-import { appStateStore, enterHome, exitHome } from '../stores/appStateStore.js';
+import { appStateStore, enterHome, exitHome, cancelDeepLink } from '../stores/appStateStore.js';
 import { isPowerOn } from '../stores/tvPowerStore.js';
 import { homeFocusStore, moveHomeFocus } from '../stores/homeNavigationStore.js';
 import { get } from 'svelte/store';
@@ -79,7 +79,7 @@ export function createKeyHandler(onSelect) {
     if (state.mode === 'deep_link') {
       if (e.key === 'Escape') {
         e.preventDefault();
-        appStateStore.update(s => ({ ...s, mode: 'selection', deepLinkTarget: null }));
+        cancelDeepLink();
       } else {
         // 다른 키 입력 무시 (프로필 변경 방지)
         e.preventDefault();

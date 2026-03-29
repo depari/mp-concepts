@@ -132,13 +132,22 @@
   function handleSelect(section, cardIndex) {
     if (section === 'apps') {
       const app = recentApps[cardIndex];
-      if (app) triggerDeepLink(app.deepLinkId);
+      if (app) {
+        deactivateContentHub();
+        triggerDeepLink(app.deepLinkId);
+      }
     } else if (section === 'recents') {
       const item = recentContents[cardIndex];
-      if (item) triggerDeepLink(item.deepLinkId);
+      if (item) {
+        deactivateContentHub();
+        triggerDeepLink(item.deepLinkId);
+      }
     } else if (section === 'recommended') {
       const item = recommended[cardIndex];
-      if (item) triggerDeepLink(item.deepLinkId);
+      if (item) {
+        deactivateContentHub();
+        triggerDeepLink(item.deepLinkId);
+      }
     }
     // 뉴스는 Enter 시 별도 처리 없음 (POC)
   }
