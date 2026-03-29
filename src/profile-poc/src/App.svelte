@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import ProfileScreen from './lib/components/ProfileScreen.svelte';
   import Header from './lib/components/Header.svelte';

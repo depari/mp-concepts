@@ -19,7 +19,7 @@ export function applyTheme(theme) {
   if (!theme || typeof document === 'undefined') return;
   const root = document.documentElement;
   Object.entries(theme.cssVars).forEach(([key, value]) => {
-    root.style.setProperty(key, value);
+    root.style.setProperty(key, value as string);
   });
   root.setAttribute('data-theme', theme.id);
 }

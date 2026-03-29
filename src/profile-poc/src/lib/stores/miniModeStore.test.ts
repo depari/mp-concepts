@@ -4,7 +4,7 @@ import { miniModeStore, toggleMiniMode } from './miniModeStore.js';
 
 describe('miniModeStore', () => {
   beforeEach(() => {
-    miniModeStore.set({ isActive: false });
+    miniModeStore.set({ isActive: false, position: 'bottom' });
   });
 
   it('toggleMiniMode 함수 호출 시 isActive가 전환(toggle)되어야 합니다.', () => {

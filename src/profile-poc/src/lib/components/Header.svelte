@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { togglePocPanel } from '../stores/pocConfigStore.js';
 </script>
 

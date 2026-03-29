@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { focusedProfile } from '../stores/profileStore.js';
   import { appStateStore } from '../stores/appStateStore.js';
   import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';

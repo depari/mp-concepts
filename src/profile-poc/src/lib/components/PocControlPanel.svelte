@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { fly, fade } from 'svelte/transition';
   import { THEMES } from '../data/themes.js';
   import {
