@@ -3,14 +3,38 @@
   import { appStateStore } from '../stores/appStateStore.js';
   import { miniModeStore, openMiniMode } from '../stores/miniModeStore.js';
   import { homeFocusStore } from '../stores/homeNavigationStore.js';
-  import { profileRecentApps, profileRecentContents } from '../stores/contentDiscoveryStore.js';
+  import { 
+    homeRecentApps, 
+    homeRecentContents, 
+    homeRecommendedContents, 
+    homeFilteredNews 
+  } from '../stores/contentDiscoveryStore.js';
   import { fade, fly, scale } from 'svelte/transition';
+  import { afterUpdate } from 'svelte';
+
+  // 컨텐츠 행 컴포넌트 재사용
+  import RecentWatchRow from './RecentWatchRow.svelte';
+  import RecommendedRow from './RecommendedRow.svelte';
+  import NewsCardRow from './NewsCardRow.svelte';
 
   $: profile = $selectedProfile;
   $: focus = $homeFocusStore;
+
+  afterUpdate(() => {
+    if (typeof document !== 'undefined') {
+      const activeSection = document.querySelector('.active-section');
+      if (activeSection) {
+        activeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  });
+
+  $: apps = $homeRecentApps;
+  $: recentContents = $homeRecentContents;
+  $: recommendedContents = $homeRecommendedContents;
+  $: newsItems = $homeFilteredNews;
   
-  $: apps = $profileRecentApps.length > 0 ? $profileRecentApps : [];
-  $: mainContent = $profileRecentContents.length > 0 ? $profileRecentContents[0] : null;
+  $: mainContent = recentContents.length > 0 ? recentContents[0] : null;
 </script>
 
 <div 
@@ -40,24 +64,50 @@
 
   <!-- 메인 추천 영역 -->
   <main class="home-main">
-    <div class="recommendation-card" in:fly={{ y: 80, delay: 500, duration: 800 }}>
-      <p class="tagline" style="color: {profile.panelAccentColor};">Welcome back, {profile.name}!</p>
-      <h1>{mainContent ? mainContent.title : '당신을 위한 추천 영화'}</h1>
-      <p class="desc">{mainContent && mainContent.subtitle ? mainContent.subtitle : '지금 바로 시청 중이던 콘텐츠를 이어서 감상해 보세요.'}</p>
-      <div class="btn-group">
-        <button 
-          class="btn primary" 
-          class:focused={focus.focusedSection === 'hero' && focus.mainBtnIndex === 0}
-          style="background: {profile.panelAccentColor}; color: white;"
-        >
-          지금 시청하기
-        </button>
-        <button 
-          class="btn secondary"
-          class:focused={focus.focusedSection === 'hero' && focus.mainBtnIndex === 1}
-        >
-          상세 정보
-        </button>
+    <div class="scroll-container">
+      <div class="recommendation-card" in:fly={{ y: 80, delay: 500, duration: 800 }}>
+        <p class="tagline" style="color: {profile.panelAccentColor};">Welcome back, {profile.name}!</p>
+        <h1>{mainContent ? mainContent.title : '당신을 위한 추천 영화'}</h1>
+        <p class="desc">{mainContent && mainContent.subtitle ? mainContent.subtitle : '지금 바로 시청 중이던 콘텐츠를 이어서 감상해 보세요.'}</p>
+        <div class="btn-group">
+          <button 
+            class="btn primary" 
+            class:focused={focus.focusedSection === 'hero' && focus.mainBtnIndex === 0}
+            style="background: {profile.panelAccentColor}; color: white;"
+          >
+            지금 시청하기
+          </button>
+          <button 
+            class="btn secondary"
+            class:focused={focus.focusedSection === 'hero' && focus.mainBtnIndex === 1}
+          >
+            상세 정보
+          </button>
+        </div>
+      </div>
+
+      <!-- 홈 화면 컨텐츠 섹션들 (최근 시청, 추천, 뉴스) -->
+      <div class="home-content-rows" in:fly={{ y: 50, delay: 600, duration: 800 }}>
+        {#if recentContents.length > 0}
+          <div class="row-wrapper" class:active-section={focus.focusedSection === 'recents'}>
+             <h3 class="section-title">최근 시청 컨텐츠</h3>
+             <RecentWatchRow items={recentContents} focusedIndex={focus.focusedSection === 'recents' ? focus.focusedCardIndex : -1} accentColor={profile.panelAccentColor} />
+          </div>
+        {/if}
+
+        {#if recommendedContents.length > 0}
+          <div class="row-wrapper" class:active-section={focus.focusedSection === 'recommended'}>
+            <h3 class="section-title">당신을 위한 추천</h3>
+            <RecommendedRow items={recommendedContents} focusedIndex={focus.focusedSection === 'recommended' ? focus.focusedCardIndex : -1} />
+          </div>
+        {/if}
+
+        {#if newsItems.length > 0}
+          <div class="row-wrapper" class:active-section={focus.focusedSection === 'news'}>
+            <h3 class="section-title">실시간 뉴스</h3>
+            <NewsCardRow items={newsItems} focusedIndex={focus.focusedSection === 'news' ? focus.focusedCardIndex : -1} />
+          </div>
+        {/if}
       </div>
     </div>
   </main>
@@ -95,7 +145,47 @@
     z-index: 100;
     color: white;
     font-family: var(--font-korean);
-    padding: 60px 80px;
+    padding: 40px 80px 20px;
+  }
+
+  .scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 40px; /* 카드가 확대될 때 잘리지 않도록 좌우 여백 확보 */
+    margin: 0 -40px;     /* 여백만큼 마진을 주어 레이아웃 유지 */
+  }
+
+  .scroll-container::-webkit-scrollbar { width: 0; display: none; }
+
+  .home-content-rows {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;          /* 행 간 간격 넓힘 */
+    padding-bottom: 200px; /* 하단 런처와 겹치지 않도록 충분한 여백 */
+  }
+
+  .row-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px 0;    /* 상하 패딩 추가하여 확대 시 잘림 방지 */
+    transition: all 0.3s ease;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    opacity: 0.6;
+    margin: 0;
+    transition: all 0.3s;
+  }
+
+  .active-section .section-title {
+    opacity: 1;
+    transform: scale(1.1) translateX(10px);
+    color: var(--profile-accent);
   }
 
   .background-tint {
@@ -154,7 +244,10 @@
   .home-main {
     flex: 1;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow: hidden;
   }
 
   .recommendation-card {
@@ -178,7 +271,9 @@
 
   .btn-group {
     display: flex;
-    gap: 16px;
+    gap: 20px;
+    padding: 15px 0; /* 버튼이 확대될 때 좌우/상하 잘림 방지 */
+    margin-left: 10px; /* 좌측 경계선에서 살짝 띄움 */
   }
   .btn {
     padding: 14px 40px;

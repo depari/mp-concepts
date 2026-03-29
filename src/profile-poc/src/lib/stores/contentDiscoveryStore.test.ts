@@ -6,10 +6,12 @@ import {
   discoveryFocusStore,
   moveSection,
   moveCard,
-  profileFilteredNews,
-  profileRecentApps,
-  profileRecentContents,
-  profileRecommendedContents,
+  hubFilteredNews,
+  hubRecentApps,
+  hubRecentContents,
+  hubRecommendedContents,
+  homeRecentApps,
+  homeRecentContents
 } from './contentDiscoveryStore.js';
 
 describe('contentDiscoveryStore - moveSection', () => {
@@ -84,30 +86,23 @@ describe('contentDiscoveryStore - moveCard', () => {
   });
 });
 
-describe('contentDiscoveryStore - profileFilteredNews', () => {
-  it('profileFilteredNews는 store이며 배열을 반환함', () => {
-    const news = get(profileFilteredNews);
-    expect(Array.isArray(news)).toBe(true);
+describe('contentDiscoveryStore - Data Integration', () => {
+  it('hub 스토어들이 유효한 배열을 반환해야 한다 (Hub 전용)', () => {
+    expect(Array.isArray(get(hubRecentApps))).toBe(true);
+    expect(Array.isArray(get(hubRecentContents))).toBe(true);
+    expect(Array.isArray(get(hubRecommendedContents))).toBe(true);
+    expect(Array.isArray(get(hubFilteredNews))).toBe(true);
   });
-});
 
-describe('contentDiscoveryStore - profileRecentApps', () => {
-  it('profileRecentApps는 store이며 배열을 반환함', () => {
-    const apps = get(profileRecentApps);
-    expect(Array.isArray(apps)).toBe(true);
+  it('homeRecentApps는 공통 앱을 포함하고 있어야 한다', () => {
+    const apps = get(homeRecentApps);
+    // 공통 앱 (Settings, Browser, Gallery) 3개가 기본으로 포함됨
+    expect(apps.some(a => a.id === 'settings')).toBe(true);
+    expect(apps.length).toBeGreaterThanOrEqual(3);
   });
-});
 
-describe('contentDiscoveryStore - profileRecentContents', () => {
-  it('profileRecentContents는 store이며 배열을 반환함', () => {
-    const contents = get(profileRecentContents);
-    expect(Array.isArray(contents)).toBe(true);
-  });
-});
-
-describe('contentDiscoveryStore - profileRecommendedContents', () => {
-  it('profileRecommendedContents는 store이며 배열을 반환함', () => {
-    const recommended = get(profileRecommendedContents);
-    expect(Array.isArray(recommended)).toBe(true);
+  it('homeRecentContents는 공통 컨텐츠를 포함하고 있어야 한다', () => {
+    const contents = get(homeRecentContents);
+    expect(contents.some(c => c.content_id === 'common_1')).toBe(true);
   });
 });

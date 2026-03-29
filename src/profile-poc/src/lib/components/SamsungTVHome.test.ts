@@ -9,17 +9,18 @@ describe('SamsungTVHome.svelte', () => {
     selectedIndex.set(0); 
   });
 
-  it('홈 화면에서 mockData가 아닌 profileRecentApps 스토어의 앱을 렌더링해야 한다', () => {
-    const { getByText } = render(SamsungTVHome);
+  it('홈 화면에서 공통 앱(Settings)과 프로필 전용 앱(Disney+)이 모두 렌더링되어야 한다', () => {
+    const { getAllByText } = render(SamsungTVHome);
     
-    // profile_1의 최근앱들 중에 있는 'Disney+' 렌더링 확인 
-    expect(getByText('Disney+')).toBeTruthy();
+    expect(getAllByText('Settings').length).toBeGreaterThanOrEqual(1); // 공통 앱
+    expect(getAllByText('Disney+').length).toBeGreaterThanOrEqual(1); // 유저 앱
   });
 
-  it('홈 화면의 메인 Hero 영역에서 profileRecentContents의 첫번째 항목 타이틀을 보여줘야 한다', () => {
-    const { getByText } = render(SamsungTVHome);
+  it('홈 화면의 메인 Hero 영역 및 컨텐츠 섹션에서 공통 컨텐츠(Samsung TV Plus Guide)가 보여야 한다', () => {
+    const { getAllByText } = render(SamsungTVHome);
     
-    // profile_1의 최근컨텐츠 중 첫번째 항목인 '오징어 게임'이 렌더링되어야 함
-    expect(getByText('오징어 게임')).toBeTruthy();
+    // Hero 영역과 최근 시청 카드 양쪽에서 발견될 수 있음
+    const elements = getAllByText('Samsung TV Plus Guide');
+    expect(elements.length).toBeGreaterThanOrEqual(1);
   });
 });

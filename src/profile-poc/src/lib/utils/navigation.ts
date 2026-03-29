@@ -5,6 +5,7 @@ import { miniModeStore, openMiniMode, toggleMiniMode } from '../stores/miniModeS
 import { appStateStore, enterHome, exitHome, cancelDeepLink } from '../stores/appStateStore.js';
 import { isPowerOn } from '../stores/tvPowerStore.js';
 import { homeFocusStore, moveHomeFocus } from '../stores/homeNavigationStore.js';
+import { homeRecentApps, homeRecentContents, homeRecommendedContents, homeFilteredNews } from '../stores/contentDiscoveryStore.js';
 import { get } from 'svelte/store';
 
 let panelOpen = false;
@@ -61,7 +62,16 @@ export function createKeyHandler(onSelect) {
     if (isHomeMode) {
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
-        moveHomeFocus(e.key);
+        
+        // 실시간 데이터 개수 확인
+        const counts = {
+          apps: get(homeRecentApps).length,
+          recents: get(homeRecentContents).length,
+          recommended: get(homeRecommendedContents).length,
+          news: get(homeFilteredNews).length
+        };
+        
+        moveHomeFocus(e.key, counts);
       }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();

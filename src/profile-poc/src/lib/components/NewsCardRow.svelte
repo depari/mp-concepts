@@ -26,8 +26,8 @@
     gap: 18px;
     overflow-x: auto;
     /* 포커스 클리핑 방지 패딩/마진 확보 */
-    padding: 24px 12px 36px;
-    margin: -18px -8px -24px;
+    padding: 40px 20px 60px;
+    margin: -30px -15px -50px;
     scrollbar-width: none;
     align-items: stretch;
   }

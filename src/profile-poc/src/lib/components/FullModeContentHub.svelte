@@ -7,10 +7,10 @@
 
   import {
     discoveryFocusStore,
-    profileRecentApps,
-    profileRecentContents,
-    profileRecommendedContents,
-    profileFilteredNews,
+    hubRecentApps,
+    hubRecentContents,
+    hubRecommendedContents,
+    hubFilteredNews,
     moveSection,
     moveCard,
     resetDiscoveryFocus
@@ -30,11 +30,11 @@
   $: profile = $focusedProfile;
   $: focus = $discoveryFocusStore;
 
-  // 섹션별 데이터 목록
-  $: recentApps       = $profileRecentApps;
-  $: recentContents   = $profileRecentContents;
-  $: recommended      = $profileRecommendedContents;
-  $: news             = $profileFilteredNews;
+  // 섹션별 데이터 목록 (Hub 전용: 포커스 이동에 즉각 반응)
+  $: recentApps       = $hubRecentApps;
+  $: recentContents   = $hubRecentContents;
+  $: recommended      = $hubRecommendedContents;
+  $: news             = $hubFilteredNews;
 
   // 섹션별 아이템 카운트 맵
   $: sectionCountMap = {

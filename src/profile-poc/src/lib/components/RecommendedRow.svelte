@@ -26,8 +26,8 @@
     gap: 18px;
     overflow-x: auto;
     /* 포커스시 transform: scale() 잘림 방지를 위해 넉넉한 패딩 확보 */
-    padding: 24px 12px 36px;
-    margin: -18px -8px -24px;
+    padding: 40px 20px 60px;
+    margin: -30px -15px -50px;
     scrollbar-width: none;
     align-items: flex-start;
   }
