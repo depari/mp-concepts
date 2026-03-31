@@ -4,14 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,9 +29,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import com.depari.mpconcepts.R
-import com.depari.mpconcepts.components.PlayerScreen
-import com.depari.mpconcepts.components.ProfilePanel
-import com.depari.mpconcepts.components.RecommendedRow
+import com.depari.mpconcepts.components.*
 import com.depari.mpconcepts.data.Content
 import com.depari.mpconcepts.viewmodel.ProfileViewModel
 import com.depari.mpconcepts.viewmodel.HomeViewModel
@@ -82,35 +78,54 @@ fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel)
         }
     }
 
-    MaterialTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            when (currentMode) {
-                AppMode.PROFILE_SELECTION -> {
-                    ProfileSelectionScreen(profileViewModel) {
-                        currentMode = AppMode.HOME
+    // 럭셔리 다크 테마 강제 (시스템 설정 무시)
+    val darkColors = androidx.tv.material3.darkColorScheme(
+        primary = Color.White,
+        background = Color.Black,
+        surface = Color.Black,
+        onBackground = Color.White,
+        onSurface = Color.White
+    )
+
+    androidx.tv.material3.MaterialTheme(colorScheme = darkColors) {
+        Surface(
+            modifier = Modifier.fillMaxSize().background(Color.Black)
+        ) {
+            AnimatedContent(
+                targetState = currentMode,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(500)) togetherWith fadeOut(animationSpec = tween(500))
+                },
+                label = "ScreenTransition"
+            ) { targetMode ->
+                when (targetMode) {
+                    AppMode.PROFILE_SELECTION -> {
+                        ProfileSelectionScreen(profileViewModel) {
+                            currentMode = AppMode.HOME
+                        }
                     }
-                }
-                AppMode.HOME -> {
-                    HomeScreen(homeViewModel, profileViewModel) { content ->
-                        homeViewModel.selectContent(content)
-                        currentMode = AppMode.DETAILS
+                    AppMode.HOME -> {
+                        HomeScreen(homeViewModel, profileViewModel) { content ->
+                            homeViewModel.selectContent(content)
+                            currentMode = AppMode.DETAILS
+                        }
                     }
-                }
-                AppMode.DETAILS -> {
-                    val selectedContent by homeViewModel.selectedContent.collectAsState(initial = null)
-                    selectedContent?.let {
-                        com.depari.mpconcepts.screens.DetailsScreen(
-                            content = it,
-                            onPlayClick = {
-                                selectedVideoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                                currentMode = AppMode.PLAYER
-                            },
-                            onBackClick = { currentMode = AppMode.HOME }
-                        )
+                    AppMode.DETAILS -> {
+                        val selectedContent by homeViewModel.selectedContent.collectAsState(initial = null)
+                        selectedContent?.let {
+                            com.depari.mpconcepts.screens.DetailsScreen(
+                                content = it,
+                                onPlayClick = {
+                                    selectedVideoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                                    currentMode = AppMode.PLAYER
+                                },
+                                onBackClick = { currentMode = AppMode.HOME }
+                            )
+                        }
                     }
-                }
-                AppMode.PLAYER -> {
-                    PlayerScreen(videoUrl = selectedVideoUrl, onBack = { currentMode = AppMode.DETAILS })
+                    AppMode.PLAYER -> {
+                        PlayerScreen(videoUrl = selectedVideoUrl, onBack = { currentMode = AppMode.DETAILS })
+                    }
                 }
             }
         }
@@ -277,10 +292,42 @@ fun ProfileSelectionScreen(viewModel: ProfileViewModel, onProfileSelect: () -> U
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, profileViewModel: ProfileViewModel, onContentSelect: (Content) -> Unit) {
     val selectedProfile by profileViewModel.selectedProfile.collectAsState()
-    val recommendedContents by homeViewModel.getContentsForSection("Recommended").collectAsState()
-    Column(modifier = Modifier.fillMaxSize().padding(48.dp)) {
-        Text("Hello, ${selectedProfile?.name ?: "Guest"}!", style = MaterialTheme.typography.headlineLarge, color = Color.Cyan)
-        Spacer(modifier = Modifier.height(32.dp))
-        RecommendedRow("Recommended for You", recommendedContents, { onContentSelect(it) })
+    val recommendedContents by homeViewModel.getContentsForSection("Recommended").collectAsState(initial = emptyList())
+    val trendingContents by homeViewModel.getContentsForSection("Trending Now").collectAsState(initial = emptyList())
+    
+    // 포커싱 된 콘텐츠 (히어로 배너용) - 데모용으로 첫 번째 아이템 선정
+    val heroContent = recommendedContents.firstOrNull()
+
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = Modifier.fillMaxSize().background(Color.Black),
+        verticalArrangement = Arrangement.Top
+    ) {
+        // 상단 히어로 배너 섹션 (영화 홍보 이미지 포함)
+        item {
+            HeroSection(heroContent)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // 수평 콘텐츠 Row 모음
+        item {
+            ContentRow(
+                title = "Curated for ${selectedProfile?.name ?: "You"}",
+                contents = recommendedContents,
+                onContentClick = onContentSelect
+            )
+        }
+
+        item {
+            ContentRow(
+                title = "Trending Now",
+                contents = trendingContents,
+                onContentClick = onContentSelect
+            )
+        }
+
+        item {
+            // 하단 여백 확보
+            Spacer(modifier = Modifier.height(64.dp))
+        }
     }
 }
