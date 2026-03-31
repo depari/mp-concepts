@@ -2,6 +2,7 @@ package com.depari.mpconcepts
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,13 +23,15 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.compose.material3.Text
+import com.depari.mpconcepts.components.PlayerScreen
 import com.depari.mpconcepts.components.ProfileAvatar
 import com.depari.mpconcepts.components.RecommendedRow
 import com.depari.mpconcepts.data.Content
 
 enum class AppMode {
     PROFILE_SELECTION,
-    HOME
+    HOME,
+    PLAYER
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -67,6 +70,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel) {
     var currentMode by remember { mutableStateOf(AppMode.PROFILE_SELECTION) }
+    var selectedVideoUrl by remember { mutableStateOf("") }
+
+    // D-Pad Back key handling for TV
+    BackHandler(enabled = currentMode != AppMode.PROFILE_SELECTION) {
+        when (currentMode) {
+            AppMode.PLAYER -> currentMode = AppMode.HOME
+            AppMode.HOME -> currentMode = AppMode.PROFILE_SELECTION
+            else -> {}
+        }
+    }
 
     MaterialTheme {
         Surface(
@@ -79,9 +92,17 @@ fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel)
                     }
                 }
                 AppMode.HOME -> {
-                    HomeScreen(homeViewModel, profileViewModel) {
-                        currentMode = AppMode.PROFILE_SELECTION
+                    HomeScreen(homeViewModel, profileViewModel) { content ->
+                        // Sample video for POC
+                        selectedVideoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                        currentMode = AppMode.PLAYER
                     }
+                }
+                AppMode.PLAYER -> {
+                    PlayerScreen(
+                        videoUrl = selectedVideoUrl,
+                        onBack = { currentMode = AppMode.HOME }
+                    )
                 }
             }
         }
@@ -123,7 +144,11 @@ fun ProfileSelectionScreen(viewModel: ProfileViewModel, onProfileSelect: () -> U
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel, profileViewModel: ProfileViewModel, onBack: () -> Unit) {
+fun HomeScreen(
+    homeViewModel: HomeViewModel, 
+    profileViewModel: ProfileViewModel, 
+    onContentSelect: (Content) -> Unit
+) {
     val selectedProfile by profileViewModel.selectedProfile.collectAsState()
     val recommendedContents by homeViewModel.getContentsForSection("Recommended").collectAsState()
     val newsContents by homeViewModel.getContentsForSection("Latest News").collectAsState()
@@ -147,17 +172,17 @@ fun HomeScreen(homeViewModel: HomeViewModel, profileViewModel: ProfileViewModel,
         RecommendedRow(
             title = "Recommended for You",
             contents = recommendedContents,
-            onContentClick = { /* Handle content click */ }
+            onContentClick = { onContentSelect(it) }
         )
 
         RecommendedRow(
             title = "Latest News",
             contents = newsContents,
-            onContentClick = { /* Handle news click */ }
+            onContentClick = { onContentSelect(it) }
         )
         
         Text(
-            text = "Press Back key or Swipe to Switch Profile",
+            text = "Press Back key on Remote to Switch Profile",
             color = Color.DarkGray,
             style = MaterialTheme.typography.labelSmall
         )
