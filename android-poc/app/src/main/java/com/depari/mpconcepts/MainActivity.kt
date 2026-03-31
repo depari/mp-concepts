@@ -31,6 +31,7 @@ import com.depari.mpconcepts.data.Content
 enum class AppMode {
     PROFILE_SELECTION,
     HOME,
+    DETAILS,
     PLAYER
 }
 
@@ -49,15 +50,15 @@ class MainActivity : ComponentActivity() {
         ))
 
         homeViewModel.setSectionContents("Recommended", listOf(
-            Content("c1", "Top Movie 1", "Action"),
-            Content("c2", "Top Movie 2", "Comedy"),
-            Content("c3", "Top Movie 3", "Drama"),
-            Content("c4", "Top Movie 4", "Sci-Fi")
+            Content("c1", "Top Movie 1", "2026 Release", "Action"),
+            Content("c2", "Top Movie 2", "New Arrival", "Comedy"),
+            Content("c3", "Top Movie 3", "Trending Now", "Drama"),
+            Content("c4", "Top Movie 4", "Sci-Fi Classic", "Sci-Fi")
         ))
         
         homeViewModel.setSectionContents("Latest News", listOf(
-            Content("n1", "TV Tech News", "Hardware"),
-            Content("n2", "App Update", "Software")
+            Content("n1", "TV Tech News", "Tech Insights", "Hardware"),
+            Content("n2", "App Update", "v1.2.0 released", "Software")
         ))
 
         setContent {
@@ -75,7 +76,8 @@ fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel)
     // D-Pad Back key handling for TV
     BackHandler(enabled = currentMode != AppMode.PROFILE_SELECTION) {
         when (currentMode) {
-            AppMode.PLAYER -> currentMode = AppMode.HOME
+            AppMode.PLAYER -> currentMode = AppMode.DETAILS
+            AppMode.DETAILS -> currentMode = AppMode.HOME
             AppMode.HOME -> currentMode = AppMode.PROFILE_SELECTION
             else -> {}
         }
@@ -93,15 +95,27 @@ fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel)
                 }
                 AppMode.HOME -> {
                     HomeScreen(homeViewModel, profileViewModel) { content ->
-                        // Sample video for POC
-                        selectedVideoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                        currentMode = AppMode.PLAYER
+                        homeViewModel.selectContent(content.id)
+                        currentMode = AppMode.DETAILS
+                    }
+                }
+                AppMode.DETAILS -> {
+                    val selectedContent by homeViewModel.selectedContent.collectAsState()
+                    selectedContent?.let { content ->
+                        com.depari.mpconcepts.screens.DetailsScreen(
+                            content = content,
+                            onPlayClick = {
+                                selectedVideoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                                currentMode = AppMode.PLAYER
+                            },
+                            onBackClick = { currentMode = AppMode.HOME }
+                        )
                     }
                 }
                 AppMode.PLAYER -> {
                     PlayerScreen(
                         videoUrl = selectedVideoUrl,
-                        onBack = { currentMode = AppMode.HOME }
+                        onBack = { currentMode = AppMode.DETAILS }
                     )
                 }
             }
