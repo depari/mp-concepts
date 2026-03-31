@@ -18,9 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
-import androidx.tv.material3.Text
+import androidx.compose.material3.Text
 import com.depari.mpconcepts.components.ProfileAvatar
 import com.depari.mpconcepts.components.RecommendedRow
 import com.depari.mpconcepts.data.Content
@@ -30,6 +31,7 @@ enum class AppMode {
     HOME
 }
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     private val profileViewModel = ProfileViewModel()
     private val homeViewModel = HomeViewModel()
@@ -56,24 +58,29 @@ class MainActivity : ComponentActivity() {
         ))
 
         setContent {
-            var currentMode by remember { mutableStateOf(AppMode.PROFILE_SELECTION) }
+            AppContent(profileViewModel, homeViewModel)
+        }
+    }
+}
 
-            MaterialTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.Black
-                ) {
-                    when (currentMode) {
-                        AppMode.PROFILE_SELECTION -> {
-                            ProfileSelectionScreen(profileViewModel) {
-                                currentMode = AppMode.HOME
-                            }
-                        }
-                        AppMode.HOME -> {
-                            HomeScreen(homeViewModel, profileViewModel) {
-                                currentMode = AppMode.PROFILE_SELECTION
-                            }
-                        }
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel) {
+    var currentMode by remember { mutableStateOf(AppMode.PROFILE_SELECTION) }
+
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when (currentMode) {
+                AppMode.PROFILE_SELECTION -> {
+                    ProfileSelectionScreen(profileViewModel) {
+                        currentMode = AppMode.HOME
+                    }
+                }
+                AppMode.HOME -> {
+                    HomeScreen(homeViewModel, profileViewModel) {
+                        currentMode = AppMode.PROFILE_SELECTION
                     }
                 }
             }
@@ -81,6 +88,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ProfileSelectionScreen(viewModel: ProfileViewModel, onProfileSelect: () -> Unit) {
     val profiles by viewModel.profiles.collectAsState()
@@ -113,6 +121,7 @@ fun ProfileSelectionScreen(viewModel: ProfileViewModel, onProfileSelect: () -> U
     }
 }
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, profileViewModel: ProfileViewModel, onBack: () -> Unit) {
     val selectedProfile by profileViewModel.selectedProfile.collectAsState()

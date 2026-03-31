@@ -7,9 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.tv.foundation.lazy.list.LazyRow
+import androidx.tv.foundation.lazy.list.TvLazyRow
 import androidx.tv.foundation.lazy.list.items
-import androidx.tv.material3.Text
+import androidx.compose.material3.Text
 import com.depari.mpconcepts.data.Content
 
 @Composable
@@ -25,10 +25,10 @@ fun RecommendedRow(
             color = Color.White,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        LazyRow(
+        TvLazyRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(contents) { content ->
+            items(items = contents) { content ->
                 RecommendedCard(
                     content = content,
                     onClick = { onContentClick(content) }

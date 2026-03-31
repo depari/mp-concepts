@@ -13,9 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Card
-import androidx.tv.material3.Text
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.compose.material3.Text
 import com.depari.mpconcepts.data.Content
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun RecommendedCard(
     content: Content,
