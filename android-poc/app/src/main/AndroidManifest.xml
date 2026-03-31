@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <uses-permission android:name="com.android.providers.tv.permission.READ_TV_LISTINGS" />
+    <uses-permission android:name="com.android.providers.tv.permission.WRITE_TV_LISTINGS" />
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:label="MP POC"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MpConcepts">
+        
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MpConcepts">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name=".provider.RecommendationProvider"
+            android:authorities="com.depari.mpconcepts.provider.RecommendationProvider"
+            android:exported="true"
+            android:permission="com.android.providers.tv.permission.WRITE_TV_LISTINGS" />
+
+    </application>
+
+</manifest>

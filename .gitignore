@@ -57,3 +57,16 @@ temp/
 # ----- 테스트 커버리지 -----
 coverage/
 .nyc_output/
+
+# ----- Android / Gradle -----
+.gradle/
+local.properties
+*.apk
+*.aab
+android-poc/**/build/
+android-poc/.cxx/
+android-poc/.externalNativeBuild/
+android-poc/captures/
+google-services.json
+.navigation/
+assetpack/
