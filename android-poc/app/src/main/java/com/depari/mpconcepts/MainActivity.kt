@@ -10,6 +10,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +35,8 @@ import com.depari.mpconcepts.components.PlayerScreen
 import com.depari.mpconcepts.components.ProfilePanel
 import com.depari.mpconcepts.components.RecommendedRow
 import com.depari.mpconcepts.data.Content
+import com.depari.mpconcepts.viewmodel.ProfileViewModel
+import com.depari.mpconcepts.viewmodel.HomeViewModel
 
 enum class AppMode {
     PROFILE_SELECTION,
@@ -54,10 +59,7 @@ class MainActivity : ComponentActivity() {
             Profile("p3", "하나", 0xFFDCEDC8, 0xFF8BC34A, null, R.drawable.avatar_3, 0xFF8BC34A)
         ))
 
-        homeViewModel.setSectionContents("Recommended", listOf(
-            Content("c1", "Top Movie 1", "2026 Release", "Action"),
-            Content("c2", "Top Movie 2", "New Arrival", "Comedy")
-        ))
+        homeViewModel.loadContentsForProfile("p1") // 초기 데이터 로드
 
         setContent {
             AppContent(profileViewModel, homeViewModel)
@@ -90,12 +92,12 @@ fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel)
                 }
                 AppMode.HOME -> {
                     HomeScreen(homeViewModel, profileViewModel) { content ->
-                        homeViewModel.selectContent(content.id)
+                        homeViewModel.selectContent(content)
                         currentMode = AppMode.DETAILS
                     }
                 }
                 AppMode.DETAILS -> {
-                    val selectedContent by homeViewModel.selectedContent.collectAsState()
+                    val selectedContent by homeViewModel.selectedContent.collectAsState(initial = null)
                     selectedContent?.let {
                         com.depari.mpconcepts.screens.DetailsScreen(
                             content = it,
@@ -118,13 +120,13 @@ fun AppContent(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel)
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ProfileSelectionScreen(viewModel: ProfileViewModel, onProfileSelect: () -> Unit) {
-    val profiles by viewModel.profiles.collectAsState()
+    val profiles: List<com.depari.mpconcepts.Profile> by viewModel.profiles.collectAsState(initial = emptyList())
     var focusedProfileId by remember { mutableStateOf<String?>(null) }
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val density = LocalDensity.current
 
-    val focusedIndex = profiles.indexOfFirst { it.id == focusedProfileId }.coerceAtLeast(0)
+    val focusedIndex = if (profiles.isEmpty()) 0 else profiles.indexOfFirst { it.id == focusedProfileId }.coerceAtLeast(0)
     
     // 레이아웃 상수 (Web Project Parity 복구)
     val itemSpacing = 40.dp
@@ -133,6 +135,7 @@ fun ProfileSelectionScreen(viewModel: ProfileViewModel, onProfileSelect: () -> U
     
     // 정밀 픽셀 기반 오프셋 계산 (누적 오차 방지)
     val targetOffsetPx = with(density) {
+        if (profiles.isEmpty()) return@with 0f
         val screenWidthPx = screenWidth.toPx()
         val expandedWidthPx = expandedWidth.toPx()
         val normalWidthPx = normalWidth.toPx()
@@ -149,8 +152,8 @@ fun ProfileSelectionScreen(viewModel: ProfileViewModel, onProfileSelect: () -> U
 
     val focusRequesters = remember(profiles.size) { profiles.map { FocusRequester() } }
 
-    LaunchedEffect(profiles) {
-        if (profiles.isNotEmpty()) {
+    LaunchedEffect(profiles, focusRequesters) {
+        if (profiles.isNotEmpty() && focusRequesters.size == profiles.size) {
             focusRequesters[0].requestFocus()
             focusedProfileId = profiles[0].id
         }

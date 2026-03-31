@@ -1,5 +1,6 @@
-package com.depari.mpconcepts
+package com.depari.mpconcepts.viewmodel
 
+import com.depari.mpconcepts.Profile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -8,8 +8,8 @@ class ProfileViewModelTest {
     @Test
     fun `프로필 리스트 초기화 및 선택 테스트`() {
         val viewModel = ProfileViewModel()
-        val profile1 = Profile("id1", "User 1")
-        val profile2 = Profile("id2", "User 2")
+        val profile1 = Profile("id1", "User 1", 0xFFF8BBD0L, 0xFFF06292L, null, null, 0xFFF06292L)
+        val profile2 = Profile("id2", "User 2", 0xFFBBDEFBL, 0xFF42A5F5L, null, null, 0xFF42A5F5L)
         
         viewModel.setProfiles(listOf(profile1, profile2))
         
